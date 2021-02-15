@@ -16,10 +16,10 @@ devtools::install.packages("egr95/R-codacore")
 
 2. To fit codacore on some data:
 ```r
-    library("R-codacore")
-    model = codacore(x, y)
-    print(model)
-    plot(model)
+library("R-codacore")
+model = codacore(x, y)
+print(model)
+plot(model)
 ```
 
 ### Unsupervised learning
