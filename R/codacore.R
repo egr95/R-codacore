@@ -591,6 +591,14 @@ plot.codacore = function(cdb) {
 }
 
 
+# Helper functions below...
+
+
+#' activeInputs
+#'
+#' @param cdb A codacore object.
+#'
+#' @return The covariates included in the log-ratios
 activeInputs.codacore = function(cdb) {
   
   vars = c()
@@ -603,18 +611,39 @@ activeInputs.codacore = function(cdb) {
   return(sort(unique(vars)))
 }
 
-# Helper functions below...
 
+#' getNumeratorParts
+#'
+#' @param cdb A codacore object.
+#' @param baseLearnerIndex An integer indicating which of the 
+#'     (possibly multiple) log-ratios learned by codacore to be used.
+#'
+#' @return The covariates in the numerator of the selected log-ratio.
 getNumeratorParts <- function(cdb, baseLearnerIndex = 1){
   
   cdb$ensemble[[baseLearnerIndex]]$hard$numerator
 }
 
+#' getDenominatorParts
+#'
+#' @param cdb A codacore object.
+#' @param baseLearnerIndex An integer indicating which of the 
+#'     (possibly multiple) log-ratios learned by codacore to be used.
+#'
+#' @return The covariates in the denominator of the selected log-ratio.
 getDenominatorParts <- function(cdb, baseLearnerIndex = 1){
   
   cdb$ensemble[[baseLearnerIndex]]$hard$denominator
 }
 
+#' getLogRatios
+#'
+#' @param cdb A codacore object
+#' @param x A set of (possibly unseen) compositional data. 
+#'     The covariates must be passed in the same order as 
+#'     for the original codacore() call.
+#'
+#' @return The learned log-ratio features, computed on input x.
 getLogRatios <- function(cdb, x=NULL){
   
   if (is.null(x)) {

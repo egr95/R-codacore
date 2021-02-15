@@ -8,13 +8,21 @@ Note this repository is under active development. If you would like to use CoDaC
 
 ## How to run CoDaCoRe
 
-Coming soon...
-
 1. To install codacore:
+
     devtools::install.packages("egr95/R-codacore")
 
 2. To fit codacore on some data:
+
     library("R-codacore")
     model = codacore(x, y)
     print(model)
     plot(model)
+
+### Unsupervised learning
+
+Coming soon... If you would like access to an early version, get [in touch]<mailto:eg2912@columbia.edu>.
+
+### Multi-omics
+
+Coming soon... If you would like access to an early version, get [in touch]<mailto:eg2912@columbia.edu>.

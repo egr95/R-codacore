@@ -23,6 +23,7 @@ Imports:
     tensorflow (>= 2.1),
     keras (>= 2.3),
     pROC (>= 1.17),
-    R6 (>= 2.5)
+    R6 (>= 2.5),
+    gtools(>= 3.8)
 Suggests:
     zCompositions
