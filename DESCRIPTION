@@ -26,4 +26,5 @@ Imports:
     R6 (>= 2.5),
     gtools(>= 3.8)
 Suggests:
-    zCompositions
+    zCompositions,
+    testthat (>= 2.1.0)

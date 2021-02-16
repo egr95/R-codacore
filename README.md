@@ -4,7 +4,7 @@ A self-contained, up-to-date implementation of [CoDaCoRe](https://www.biorxiv.or
 
 For an equivalent implementation in python, check [py-codacore](https://github.com/egr95/py-codacore). If you are interested in reproducing the results in the [original paper](add_arxiv_link), check [this repo](https://github.com/cunningham-lab/codacore).
 
-Note this repository is under active development. If you would like to use CoDaCoRe on your dataset, and have any questions regarding the usage, implementation, or model itself, do not hesitate to contact <eg2912@columbia.edu>.
+Note this repository is under active development. If you would like to use CoDaCoRe on your dataset, and have any questions regarding the installation, usage, implementation, or model itself, do not hesitate to contact <eg2912@columbia.edu>.
 
 ## How to run CoDaCoRe
 
@@ -26,12 +26,12 @@ print(model)
 plot(model)
 ```
 
-3. Tensorflow
+3. Tensorflow and Keras:
 
-Note that codacore requires a working installation of tensorflow.
-If you do not have tensorflow previously installed, when you run ```codacore()``` for the first time you will likely encounter an error message of the form:
+Note that CoDaCoRe requires a working installation of Tensorflow.
+If you do not have Tensorflow previously installed, when you run ```codacore()``` for the first time you will likely encounter an error message of the form:
 ```r
-> codacore(x,y,type='B')
+> codacore(x, y)
 
 ERROR: Could not find a version that satisfies the requirement tensorflow
 ERROR: No matching distribution found for tensorflow
@@ -44,13 +44,31 @@ Python environments searched for 'tensorflow' package:
 You can install TensorFlow using the install_tensorflow() function.
 ```
 
-This can be fixed simply by installing tensorflow, as follows:
+This can be fixed simply by [installing tensorflow](https://tensorflow.rstudio.com/installation/), as follows:
 ```r
+install.packages("tensorflow")
 library("tensorflow")
 install_tensorflow()
+
+install.packages("keras")
+library("keras")
+install_keras()
 ```
 
-Note also that you may have to restart your R session between installation of codacore and/or tensorflow.
+Note also that you may have to restart your R session between installation of codacore, tensorflow, and keras.
+
+4. Running on an HPC cluster:
+
+Again, you must have a working installation of Tensorflow and Keras.
+Depending on your permissions, you may have to install these to a personal directory, using ```.libPaths```.
+My personal recommendation is to skip ```.libPaths``` altogether and use an R conda environment, e.g.,
+```sh
+conda create -n <my-env-name> r-essentials r-base
+conda activate <my-env-name>
+conda install -c conda-forge r-keras
+# Whenever possible, it is more robust to install dependencies via conda than install.packages
+conda install -c conda-forge r-devtools 
+```
 
 ### Unsupervised learning
 

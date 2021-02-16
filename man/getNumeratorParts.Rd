@@ -4,10 +4,10 @@
 \alias{getNumeratorParts}
 \title{getNumeratorParts}
 \usage{
-getNumeratorParts(cdb, baseLearnerIndex = 1)
+getNumeratorParts(cdcr, baseLearnerIndex = 1)
 }
 \arguments{
-\item{cdb}{A codacore object.}
+\item{cdcr}{A codacore object.}
 
 \item{baseLearnerIndex}{An integer indicating which of the 
 (possibly multiple) log-ratios learned by codacore to be used.}

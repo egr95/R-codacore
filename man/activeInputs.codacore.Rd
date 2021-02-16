@@ -4,10 +4,10 @@
 \alias{activeInputs.codacore}
 \title{activeInputs}
 \usage{
-activeInputs.codacore(cdb)
+activeInputs.codacore(cdcr)
 }
 \arguments{
-\item{cdb}{A codacore object.}
+\item{cdcr}{A codacore object.}
 }
 \value{
 The covariates included in the log-ratios

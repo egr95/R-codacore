@@ -4,10 +4,10 @@
 \alias{getLogRatios}
 \title{getLogRatios}
 \usage{
-getLogRatios(cdb, x = NULL)
+getLogRatios(cdcr, x = NULL)
 }
 \arguments{
-\item{cdb}{A codacore object}
+\item{cdcr}{A codacore object}
 
 \item{x}{A set of (possibly unseen) compositional data. 
 The covariates must be passed in the same order as 

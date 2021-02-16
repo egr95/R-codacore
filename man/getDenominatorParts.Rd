@@ -4,10 +4,10 @@
 \alias{getDenominatorParts}
 \title{getDenominatorParts}
 \usage{
-getDenominatorParts(cdb, baseLearnerIndex = 1)
+getDenominatorParts(cdcr, baseLearnerIndex = 1)
 }
 \arguments{
-\item{cdb}{A codacore object.}
+\item{cdcr}{A codacore object.}
 
 \item{baseLearnerIndex}{An integer indicating which of the 
 (possibly multiple) log-ratios learned by codacore to be used.}

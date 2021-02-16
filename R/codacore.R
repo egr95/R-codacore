@@ -527,7 +527,7 @@ codacore <- function(
     if (cdbl$AUC > 0.999) {break}
   }
   
-  cdb = list(
+  cdcr = list(
     ensemble=ensemble,
     x = x,
     y = y,
@@ -539,17 +539,17 @@ codacore <- function(
     optParams=optParams,
     cvParams=cvParams
   )
-  class(cdb) = "codacore"
+  class(cdcr) = "codacore"
   
-  return(cdb)
+  return(cdcr)
 }
 
 
-predict.codacore = function(cdb, x, logits=T) {
+predict.codacore = function(cdcr, x, logits=T) {
   x = .prepx(x)
   yHat = rep(0, nrow(x))
-  for (cdbl in cdb$ensemble) {
-    yHat = yHat + cdb$shrinkage * predict(cdbl, x)
+  for (cdbl in cdcr$ensemble) {
+    yHat = yHat + cdcr$shrinkage * predict(cdbl, x)
   }
   if (logits) {
     return(yHat)
@@ -619,16 +619,16 @@ plot.codacore = function(x, ...) {
 
 #' activeInputs
 #'
-#' @param cdb A codacore object.
+#' @param cdcr A codacore object.
 #'
 #' @return The covariates included in the log-ratios
 #' 
 #' @export
-activeInputs.codacore = function(cdb) {
+activeInputs.codacore = function(cdcr) {
   
   vars = c()
   
-  for (cdbl in cdb$ensemble) {
+  for (cdbl in cdcr$ensemble) {
     vars = c(vars, which(cdbl$hard$numerator))
     vars = c(vars, which(cdbl$hard$denominator))
   }
@@ -639,35 +639,35 @@ activeInputs.codacore = function(cdb) {
 
 #' getNumeratorParts
 #'
-#' @param cdb A codacore object.
+#' @param cdcr A codacore object.
 #' @param baseLearnerIndex An integer indicating which of the 
 #'     (possibly multiple) log-ratios learned by codacore to be used.
 #'
 #' @return The covariates in the numerator of the selected log-ratio.
 #' 
 #' @export
-getNumeratorParts <- function(cdb, baseLearnerIndex = 1){
+getNumeratorParts <- function(cdcr, baseLearnerIndex = 1){
   
-  cdb$ensemble[[baseLearnerIndex]]$hard$numerator
+  cdcr$ensemble[[baseLearnerIndex]]$hard$numerator
 }
 
 #' getDenominatorParts
 #'
-#' @param cdb A codacore object.
+#' @param cdcr A codacore object.
 #' @param baseLearnerIndex An integer indicating which of the 
 #'     (possibly multiple) log-ratios learned by codacore to be used.
 #'
 #' @return The covariates in the denominator of the selected log-ratio.
 #' 
 #' @export
-getDenominatorParts <- function(cdb, baseLearnerIndex = 1){
+getDenominatorParts <- function(cdcr, baseLearnerIndex = 1){
   
-  cdb$ensemble[[baseLearnerIndex]]$hard$denominator
+  cdcr$ensemble[[baseLearnerIndex]]$hard$denominator
 }
 
 #' getLogRatios
 #'
-#' @param cdb A codacore object
+#' @param cdcr A codacore object
 #' @param x A set of (possibly unseen) compositional data. 
 #'     The covariates must be passed in the same order as 
 #'     for the original codacore() call.
@@ -675,21 +675,21 @@ getDenominatorParts <- function(cdb, baseLearnerIndex = 1){
 #' @return The learned log-ratio features, computed on input x.
 #' 
 #' @export
-getLogRatios <- function(cdb, x=NULL){
+getLogRatios <- function(cdcr, x=NULL){
   
   if (is.null(x)) {
-    x = cdb$x
+    x = cdcr$x
   }
   
-  if (cdb$type == 'A') {
-    epsilonA = cdb$optParams$epsilonA
-    ratios <- lapply(cdb$ensemble, function(a){
+  if (cdcr$type == 'A') {
+    epsilonA = cdcr$optParams$epsilonA
+    ratios <- lapply(cdcr$ensemble, function(a){
       num <- rowSums(x[, a$hard$numerator, drop=FALSE]) + epsilonA
       den <- rowSums(x[, a$hard$denominator, drop=FALSE]) + epsilonA
       log(num/den)
     })
-  } else if (cdb$type == 'B') {
-    ratios <- lapply(cdb$ensemble, function(a){
+  } else if (cdcr$type == 'B') {
+    ratios <- lapply(cdcr$ensemble, function(a){
       num <- rowMeans(log(x[, a$hard$numerator, drop=FALSE]))
       den <- rowMeans(log(x[, a$hard$denominator, drop=FALSE]))
       log(num/den)
