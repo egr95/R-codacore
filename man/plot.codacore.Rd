@@ -4,10 +4,12 @@
 \alias{plot.codacore}
 \title{plot}
 \usage{
-\method{plot}{codacore}(cdb)
+\method{plot}{codacore}(x, ...)
 }
 \arguments{
-\item{cdb}{}
+\item{x}{A codacore object.}
+
+\item{...}{Not used.}
 }
 \value{
 

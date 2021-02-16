@@ -7,7 +7,7 @@
 codacore(
   x,
   y,
-  type,
+  type = "balances",
   mode = "classification",
   gamma = 0.5,
   shrinkage = 1,
@@ -24,7 +24,7 @@ codacore(
 \item{y}{A data.frame of the response variables.}
 
 \item{type}{A string indicating whether to use "balances" or "amalgamations".
-Also accepts "balance", "B", "amalgam" or "A".}
+Also accepts "balance", "B", "ILR", or "amalgam", "A", "SLR".}
 
 \item{mode}{A string indicating "classification" or "regression".}
 

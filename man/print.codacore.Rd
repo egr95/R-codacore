@@ -4,10 +4,12 @@
 \alias{print.codacore}
 \title{print}
 \usage{
-\method{print}{codacore}(cdb)
+\method{print}{codacore}(x, ...)
 }
 \arguments{
-\item{cdb}{}
+\item{x}{A codacore object.}
+
+\item{...}{Not used.}
 }
 \value{
 

@@ -372,7 +372,7 @@ predict.CoDaBaseLearner = function(cdbl, x, logits=T) {
 #' @param x A data.frame of the compositional predictor variables.
 #' @param y A data.frame of the response variables.
 #' @param type A string indicating whether to use "balances" or "amalgamations".
-#' Also accepts "balance", "B", "amalgam" or "A".
+#' Also accepts "balance", "B", "ILR", or "amalgam", "A", "SLR".
 #' @param mode A string indicating "classification" or "regression".
 #' @param gamma A numeric. Corresponds to the "gamma-SE" rule. Sets the "regularization strength"
 #'  used by the algorithm to decide how to harden the ratio. 
@@ -401,7 +401,7 @@ predict.CoDaBaseLearner = function(cdbl, x, logits=T) {
 codacore <- function(
   x,
   y,
-  type,
+  type='balances',
   mode='classification',
   gamma=0.5,
   shrinkage=1.0,
@@ -417,9 +417,9 @@ codacore <- function(
   y = .prepy(y)
 
   # Convert type to a unique label:
-  if (type %in% c('amalgamations', 'amalgam', 'A')) {
+  if (type %in% c('amalgamations', 'amalgam', 'A', 'SLR')) {
     type='A'
-  } else if (type %in% c('balances', 'balance', 'B')) {
+  } else if (type %in% c('balances', 'balance', 'B', 'ILR')) {
     type='B'
   } else {
     stop('Invalid type argument given: ', type)
@@ -561,20 +561,21 @@ predict.codacore = function(cdb, x, logits=T) {
 
 #' print
 #'
-#' @param cdb A codacore object.
+#' @param x A codacore object.
+#' @param ... Not used.
 #'
 #' @return
 #' @export
 #'
 #' @examples
-print.codacore = function(cdb) {
+print.codacore = function(x, ...) {
   # TODO: Make this into a table to print all at once
-  cat("\nNumber of base learners found:", length(cdb$ensemble))
-  for (i in 1:length(cdb$ensemble)) {
+  cat("\nNumber of base learners found:", length(x$ensemble))
+  for (i in 1:length(x$ensemble)) {
     cat("\n***")
     cat("\nBase Learner", i)
-    cdbl = cdb$ensemble[[i]]
-    hard = cdb$ensemble[[i]]$hard
+    cdbl = x$ensemble[[i]]
+    hard = x$ensemble[[i]]$hard
     cat("\nNumerator:", which(cdbl$hard$numerator))
     cat("\nDenominator:", which(cdbl$hard$denominator))
     cat("\nIntercept:", cdbl$intercept)
@@ -587,18 +588,19 @@ print.codacore = function(cdb) {
 
 #' plot
 #'
-#' @param cdb A codacore object.
+#' @param x A codacore object.
+#' @param ... Not used.
 #'
 #' @return
 #' @export
 #'
 #' @examples
-plot.codacore = function(cdb) {
+plot.codacore = function(x, ...) {
   cols = c("black", "gray40", "gray60", "gray80")
   lwds = c(2.0, 1.5, 1.2, 0.8)
-  graphics::plot(cdb$ensemble[[1]]$ROC)
-  for (i in 2:min(4, length(cdb$ensemble))) {
-    graphics::lines(cdb$ensemble[[i]]$ROC$specificities, cdb$ensemble[[i]]$ROC$sensitivities, col=cols[i], lwd=lwds[i])
+  graphics::plot(x$ensemble[[1]]$ROC)
+  for (i in 2:min(4, length(x$ensemble))) {
+    graphics::lines(x$ensemble[[i]]$ROC$specificities, x$ensemble[[i]]$ROC$sensitivities, col=cols[i], lwd=lwds[i])
   }
   graphics::legend(
     "bottomright",
