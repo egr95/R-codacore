@@ -243,8 +243,11 @@ findBestCutoff.CoDaBaseLearner = function(cdbl) {
   # Start from 2nd since we equalized +ve and -ve; thus neither side will be empty
   candidateCutoffs = candidateCutoffs[2:min(maxCutoffs, length(candidateCutoffs))]
   
+  # TODO: re-implement without passing cdbl to harden()
+  # and setInterceptAndSlope() to avoid computational overhead
+  # from copying data unnecessarily
+  
   # Compute the CV scores:
-  # TODO: consider using cv.glm() here for computational gains
   startTime = Sys.time()
   numFolds = cdbl$cvParams$numFolds
   # Naive way of splitting equally into folds:
@@ -393,6 +396,8 @@ predict.CoDaBaseLearner = function(cdbl, x, logits=T) {
 #' @param overlap TODO: To be implemented
 #' 
 #' @importFrom stats predict
+#' 
+#' @export
 codacore <- function(
   x,
   y,
@@ -554,6 +559,14 @@ predict.codacore = function(cdb, x, logits=T) {
 }
 
 
+#' print
+#'
+#' @param cdb A codacore object.
+#'
+#' @return
+#' @export
+#'
+#' @examples
 print.codacore = function(cdb) {
   # TODO: Make this into a table to print all at once
   cat("\nNumber of base learners found:", length(cdb$ensemble))
@@ -572,6 +585,14 @@ print.codacore = function(cdb) {
 }
 
 
+#' plot
+#'
+#' @param cdb A codacore object.
+#'
+#' @return
+#' @export
+#'
+#' @examples
 plot.codacore = function(cdb) {
   cols = c("black", "gray40", "gray60", "gray80")
   lwds = c(2.0, 1.5, 1.2, 0.8)
@@ -599,6 +620,8 @@ plot.codacore = function(cdb) {
 #' @param cdb A codacore object.
 #'
 #' @return The covariates included in the log-ratios
+#' 
+#' @export
 activeInputs.codacore = function(cdb) {
   
   vars = c()
@@ -619,6 +642,8 @@ activeInputs.codacore = function(cdb) {
 #'     (possibly multiple) log-ratios learned by codacore to be used.
 #'
 #' @return The covariates in the numerator of the selected log-ratio.
+#' 
+#' @export
 getNumeratorParts <- function(cdb, baseLearnerIndex = 1){
   
   cdb$ensemble[[baseLearnerIndex]]$hard$numerator
@@ -631,6 +656,8 @@ getNumeratorParts <- function(cdb, baseLearnerIndex = 1){
 #'     (possibly multiple) log-ratios learned by codacore to be used.
 #'
 #' @return The covariates in the denominator of the selected log-ratio.
+#' 
+#' @export
 getDenominatorParts <- function(cdb, baseLearnerIndex = 1){
   
   cdb$ensemble[[baseLearnerIndex]]$hard$denominator
@@ -644,6 +671,8 @@ getDenominatorParts <- function(cdb, baseLearnerIndex = 1){
 #'     for the original codacore() call.
 #'
 #' @return The learned log-ratio features, computed on input x.
+#' 
+#' @export
 getLogRatios <- function(cdb, x=NULL){
   
   if (is.null(x)) {
