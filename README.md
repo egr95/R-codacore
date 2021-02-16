@@ -17,10 +17,40 @@ devtools::install_github("egr95/R-codacore", ref="main")
 2. To fit codacore on some data:
 ```r
 library("codacore")
-model = codacore(x, y)
+model = codacore(
+    x, # compositional input, e.g., HTS count data 
+    y, # response variable, typically a 0/1 binary indicator 
+    type = "balances" # can use "amalgamations" instead, or abbreviations "B" and "A"
+)
 print(model)
 plot(model)
 ```
+
+3. Tensorflow
+
+Note that codacore requires a working installation of tensorflow.
+If you do not have tensorflow previously installed, when you run ```codacore()``` for the first time you will likely encounter an error message of the form:
+```r
+> codacore(x,y,type='B')
+
+ERROR: Could not find a version that satisfies the requirement tensorflow
+ERROR: No matching distribution found for tensorflow
+Error: Installation of TensorFlow not found.
+
+Python environments searched for 'tensorflow' package:
+ /moto/stats/users/eg2912/miniconda3/envs/r-test/bin/python3.9
+ /usr/bin/python2.7
+
+You can install TensorFlow using the install_tensorflow() function.
+```
+
+This can be fixed simply by installing tensorflow, as follows:
+```r
+library("tensorflow")
+install_tensorflow()
+```
+
+Note also that you may have to restart your R session between installation of codacore and/or tensorflow.
 
 ### Unsupervised learning
 
