@@ -1,4 +1,4 @@
-test_that("multiplication works", {
+testthat::test_that("multiplication works", {
   set.seed(0)
   n = 1000
   p = 100
@@ -7,6 +7,6 @@ test_that("multiplication works", {
   y = HTS$y
   model = codacore(x, y)
   
-  expect_true(getNumeratorParts(model, 1)[1])
-  expect_true(getDenominatorParts(model, 1)[2])
+  testthat::expect_true(getNumeratorParts(model, 1)[1])
+  testthat::expect_true(getDenominatorParts(model, 1)[2])
 })

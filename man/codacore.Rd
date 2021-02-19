@@ -9,7 +9,7 @@ codacore(
   y,
   type = "balances",
   mode = "classification",
-  gamma = 0.5,
+  lambda = 1,
   shrinkage = 1,
   maxBaseLearners = 10,
   optParams = list(),
@@ -28,11 +28,12 @@ Also accepts "balance", "B", "ILR", or "amalgam", "A", "SLR".}
 
 \item{mode}{A string indicating "classification" or "regression".}
 
-\item{gamma}{A numeric. Corresponds to the "gamma-SE" rule. Sets the "regularization strength"
+\item{lambda}{A numeric. Corresponds to the "lambda-SE" rule. Sets the "regularization strength"
 used by the algorithm to decide how to harden the ratio. 
 Larger numbers tend to yield fewer, more sparse ratios.}
 
-\item{shrinkage}{TODO: Remove this param}
+\item{shrinkage}{A numeric. Shrinkage factor applied to each base learner.
+Defaults to 1.0, i.e., no shrinkage applied.}
 
 \item{maxBaseLearners}{An integer. The maximum number of log-ratios that the model will
 learn before stopping. Automatic stopping based on \code{seRule} may occur sooner.}

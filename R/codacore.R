@@ -11,7 +11,7 @@ library(keras)
   boostingOffset,
   type,
   mode,
-  gamma,
+  lambda,
   cvParams,
   optParams,
   verbose
@@ -29,7 +29,7 @@ library(keras)
     boostingOffset=boostingOffset,
     type=type,
     mode=mode,
-    gamma=gamma,
+    lambda=lambda,
     cvParams=cvParams,
     optParams=optParams,
     verbose=verbose
@@ -270,12 +270,12 @@ findBestCutoff.CoDaBaseLearner = function(cdbl) {
       scores[i, j] = pROC::auc(ROC)
     }
   }
-  # Now implement gamma-SE rule
+  # Now implement lambda-SE rule
   means = apply(scores, 1, mean)
   stds = apply(scores, 1, stats::sd)
-  gammaSeRule = max(means) - stds[which.max(means)] * cdbl$gamma
+  lambdaSeRule = max(means) - stds[which.max(means)] * cdbl$lambda
   # oneSdRule = max(means - stds)
-  bestCutoff = candidateCutoffs[means >= gammaSeRule][1]
+  bestCutoff = candidateCutoffs[means >= lambdaSeRule][1]
   # bestCutoff = candidateCutoffs[which.max(scores)]
   
   
@@ -285,10 +285,10 @@ findBestCutoff.CoDaBaseLearner = function(cdbl) {
     print(endTime - startTime)
     graphics::plot(2:maxCutoffs, means, ylim=range(c(means-stds, means+stds)))
     graphics::arrows(2:maxCutoffs, means-stds, 2:maxCutoffs, means+stds, length=0.05, angle=90, code=3)
-    graphics::abline(gammaSeRule, 0)
+    graphics::abline(lambdaSeRule, 0)
   }
   
-  noImprovement = gammaSeRule < pROC::auc(pROC::roc(cdbl$y, cdbl$boostingOffset, quiet=T))
+  noImprovement = lambdaSeRule < pROC::auc(pROC::roc(cdbl$y, cdbl$boostingOffset, quiet=T))
   if (noImprovement) {
     bestCutoff = 1.1 # bigger than the softAssignment
   }
@@ -374,10 +374,11 @@ predict.CoDaBaseLearner = function(cdbl, x, logits=T) {
 #' @param type A string indicating whether to use "balances" or "amalgamations".
 #' Also accepts "balance", "B", "ILR", or "amalgam", "A", "SLR".
 #' @param mode A string indicating "classification" or "regression".
-#' @param gamma A numeric. Corresponds to the "gamma-SE" rule. Sets the "regularization strength"
+#' @param lambda A numeric. Corresponds to the "lambda-SE" rule. Sets the "regularization strength"
 #'  used by the algorithm to decide how to harden the ratio. 
 #'  Larger numbers tend to yield fewer, more sparse ratios.
-#' @param shrinkage TODO: Remove this param
+#' @param shrinkage A numeric. Shrinkage factor applied to each base learner.
+#'  Defaults to 1.0, i.e., no shrinkage applied.
 #' @param maxBaseLearners An integer. The maximum number of log-ratios that the model will
 #'  learn before stopping. Automatic stopping based on \code{seRule} may occur sooner.
 #' @param optParams A list of named parameters for the optimization of the
@@ -403,7 +404,7 @@ codacore <- function(
   y,
   type='balances',
   mode='classification',
-  gamma=0.5,
+  lambda=1.0,
   shrinkage=1.0,
   maxBaseLearners=10,
   optParams=list(),
@@ -496,7 +497,7 @@ codacore <- function(
       boostingOffset=boostingOffset,
       type=type,
       mode=mode,
-      gamma=gamma,
+      lambda=lambda,
       optParams=optParams,
       cvParams=cvParams,
       verbose=verbose
@@ -533,7 +534,7 @@ codacore <- function(
     y = y,
     mode=mode,
     type=type,
-    gamma=gamma,
+    lambda=lambda,
     shrinkage=shrinkage,
     maxBaseLearners=maxBaseLearners,
     optParams=optParams,

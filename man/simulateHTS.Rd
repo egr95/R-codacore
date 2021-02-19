@@ -2,7 +2,7 @@
 % Please edit documentation in R/simulations.R
 \name{simulateHTS}
 \alias{simulateHTS}
-\title{simulate}
+\title{simulateHTS}
 \usage{
 simulateHTS(n, p, logratio = "simple")
 }
