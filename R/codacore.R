@@ -69,6 +69,7 @@ trainRelaxation.CoDaBaseLearner = function(cdbl) {
   # Initializaing the intercept at the average of the data
   # this helps optimization greatly
   if (cdbl$mode == "classification") {
+    loss_func = 'binary_crossentropy'
     if (abs(mean(1 / (1 + exp(-cdbl$boostingOffset))) - mean(cdbl$y)) < 0.001) {
       # Protect against numerical errors in glm() call
       interceptInit = 0.0
@@ -77,6 +78,7 @@ trainRelaxation.CoDaBaseLearner = function(cdbl) {
       interceptInit = tempGLM$coef[[1]]
     }
   } else if (cdbl$mode == "regression") {
+    loss_func = 'mean_squared_error'
     interceptInit = mean(cdbl$y - cdbl$boostingOffset)
   }
   
@@ -179,7 +181,7 @@ trainRelaxation.CoDaBaseLearner = function(cdbl) {
     
     # compile graph
     model %>% keras::compile(
-      loss = 'binary_crossentropy',
+      loss = loss_func,
       optimizer = keras::optimizer_sgd(lr=lr, momentum=cdbl$optParams$momentum),
       # optimizer = keras::optimizer_adam(lr=0.001),
       metrics = c('accuracy')
@@ -337,9 +339,7 @@ computeLogRatio.CoDaBaseLearner = function(cdbl, x) {
     logRatio = rowSums(x * 0)
   } else { # we have a bona fide log-ratio
     if (cdbl$type == 'A') {
-      #TODO: Maybe set this epsilon to 0 by using 2-sided LRs only?
       epsilon = cdbl$optParams$epsilonA
-      # epsilon = 0
       pvePart = rowSums(x[, cdbl$hard$numerator, drop=F]) # drop=F to keep as matrix
       nvePart = rowSums(x[, cdbl$hard$denominator, drop=F])
       logRatio = log(pvePart + epsilon) - log(nvePart + epsilon)
@@ -367,12 +367,15 @@ predict.CoDaBaseLearner = function(cdbl, x, logits=T) {
 
 #' codacore
 #' 
-#' This function implements the codacore algorithm described in [DOI].
+#' This function implements the codacore algorithm described in https://doi.org/10.1101/2021.02.11.430695.
 #' 
 #' @param x A data.frame of the compositional predictor variables.
 #' @param y A data.frame of the response variables.
 #' @param type A string indicating whether to use "balances" or "amalgamations".
 #' Also accepts "balance", "B", "ILR", or "amalgam", "A", "SLR".
+#' Note that the current implementation for balances is not strictly an ILR,
+#' but rather just a collection of balances (which are possibly non-orthogonal
+#' in the Aitchison sense).
 #' @param mode A string indicating "classification" or "regression".
 #' @param lambda A numeric. Corresponds to the "lambda-SE" rule. Sets the "regularization strength"
 #'  used by the algorithm to decide how to harden the ratio. 
@@ -427,7 +430,6 @@ codacore <- function(
   }
   
   if (any(x == 0)) {
-    #TODO: should depend on type
     if (type == 'A') {
       warning("The data contain zeros. An epsilon is used to prevent divide-by-zero errors.")
     } else if (type == 'B') {
@@ -505,7 +507,6 @@ codacore <- function(
     endTime = Sys.time()
     
     if (verbose) {
-      #TODO: just print(cdbl) maybe?
       cat('\n\n\nBase Learner', i)
       cat('\nLog-ratio indexes:')
       cat('\nNumerator =', which(cdbl$hard$numerator))

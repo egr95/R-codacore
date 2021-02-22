@@ -24,7 +24,10 @@ codacore(
 \item{y}{A data.frame of the response variables.}
 
 \item{type}{A string indicating whether to use "balances" or "amalgamations".
-Also accepts "balance", "B", "ILR", or "amalgam", "A", "SLR".}
+Also accepts "balance", "B", "ILR", or "amalgam", "A", "SLR".
+Note that the current implementation for balances is not strictly an ILR,
+but rather just a collection of balances (which are possibly non-orthogonal
+in the Aitchison sense).}
 
 \item{mode}{A string indicating "classification" or "regression".}
 
@@ -57,5 +60,5 @@ during CV process).}
 \item{overlap}{TODO: To be implemented}
 }
 \description{
-This function implements the codacore algorithm described in [DOI].
+This function implements the codacore algorithm described in https://doi.org/10.1101/2021.02.11.430695.
 }

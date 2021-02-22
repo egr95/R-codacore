@@ -42,7 +42,7 @@ simulateHTS = function(n, p, logratio = 'simple'){
     if (p < 10) {
       stop("Input dimension must be >= 10")
     }
-    eta = rowSums(log(P[, c(1,2,6)])) - rowSums(log(P[, c(3,8)]))
+    eta = rowMeans(log(P[, c(4, 6)])) - log(P[, 5])
   } else if (logratio == 'amalgamation') {
     if (p < 20) {
       stop("Input dimension must be >= 20")
