@@ -6,15 +6,30 @@ testthat::test_that("simple logratios", {
   HTS = simulateHTS(n, p)
   x = HTS$x + 1
   y = HTS$y
-  model = codacore(x, y, type='B')
+  model = codacore(x, y, logRatioType='B')
   testthat::expect_true(getNumeratorParts(model, 1)[1])
   testthat::expect_true(getDenominatorParts(model, 1)[2])
   testthat::expect_equal(model$ensemble[[1]]$accuracy, 0.846)
   
-  model = codacore(x, y, type='A')
+  model = codacore(x, y, logRatioType='A')
   testthat::expect_true(getNumeratorParts(model, 1)[1])
   testthat::expect_true(getDenominatorParts(model, 1)[2])
   testthat::expect_equal(model$ensemble[[1]]$accuracy, 0.846)
+  
+  # Now test in regression mode
+  HTS = simulateHTS(n, p, outputType = 'continuous')
+  x = HTS$x + 1
+  y = HTS$y
+  model = codacore(x, y, logRatioType='B', objective='regression')
+  testthat::expect_true(getNumeratorParts(model, 1)[1])
+  testthat::expect_true(getDenominatorParts(model, 1)[2])
+  testthat::expect_equal(model$ensemble[[1]]$Rsquared, 0.460, tolerance=0.001)
+  
+  model = codacore(x, y, logRatioType='A', objective='regression')
+  testthat::expect_true(getNumeratorParts(model, 1)[1])
+  testthat::expect_true(getDenominatorParts(model, 1)[2])
+  testthat::expect_equal(model$ensemble[[1]]$Rsquared, 0.460, tolerance=0.001)
+  
 })
 
 testthat::test_that("balances", {
@@ -25,12 +40,20 @@ testthat::test_that("balances", {
   HTS = simulateHTS(n, p, logratio='balance')
   x = HTS$x + 1
   y = HTS$y
-  model = codacore(x, y, type='B')
+  model = codacore(x, y, logRatioType='B')
   
   testthat::expect_true(getNumeratorParts(model, 1)[4])
   testthat::expect_true(getNumeratorParts(model, 1)[6])
   testthat::expect_true(getDenominatorParts(model, 1)[5])
   testthat::expect_equal(model$ensemble[[1]]$accuracy, 0.73)
+  
+  # Now test in regression mode
+  HTS = simulateHTS(n, p, logratio='balance', outputType = 'continuous')
+  x = HTS$x + 1
+  y = HTS$y
+  model = codacore(x, y, logRatioType='B', objective='regression')
+  testthat::expect_equal(model$ensemble[[1]]$Rsquared, 0.223, tolerance=0.001)
+  
 })
 
 testthat::test_that("amalgamations", {
@@ -41,11 +64,23 @@ testthat::test_that("amalgamations", {
   HTS = simulateHTS(n, p, logratio='amalgamation')
   x = HTS$x + 1
   y = HTS$y
-  model = codacore(x, y, type='A')
+  model = codacore(x, y, logRatioType='A')
   
   testthat::expect_true(getNumeratorParts(model, 1)[1])
   testthat::expect_true(getNumeratorParts(model, 1)[2])
   testthat::expect_true(getDenominatorParts(model, 1)[3])
   testthat::expect_equal(model$ensemble[[1]]$AUC[1], 0.916, tolerance=0.001)
+  
+  
+  # Now test in regression mode
+  HTS = simulateHTS(n, p, logratio='amalgamation', outputType = 'continuous')
+  x = HTS$x + 1
+  y = HTS$y
+  model = codacore(x, y, logRatioType='A', objective='regression')
+  testthat::expect_true(getNumeratorParts(model, 1)[1])
+  testthat::expect_true(getNumeratorParts(model, 1)[2])
+  testthat::expect_true(getDenominatorParts(model, 1)[3])
+  testthat::expect_equal(model$ensemble[[1]]$Rsquared, 0.416, tolerance=0.001)
+  
 })
 

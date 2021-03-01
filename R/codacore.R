@@ -9,8 +9,8 @@ library(keras)
   x,
   y,
   boostingOffset,
-  type,
-  mode,
+  logRatioType,
+  objective,
   lambda,
   cvParams,
   optParams,
@@ -23,12 +23,11 @@ library(keras)
     weights=NULL,
     softAssignment=NULL,
     hard=NULL,
-    ROC=NULL,
     x=x,
     y=y,
     boostingOffset=boostingOffset,
-    type=type,
-    mode=mode,
+    logRatioType=logRatioType,
+    objective=objective,
     lambda=lambda,
     cvParams=cvParams,
     optParams=optParams,
@@ -50,9 +49,14 @@ library(keras)
   
   # Add some metrics
   yHat = predict(cdbl, x) + boostingOffset
-  cdbl$ROC = pROC::roc(y, yHat, quiet=T)
-  cdbl$AUC = pROC::auc(cdbl$ROC)
-  cdbl$accuracy = mean(y == (yHat > 0))
+  if (cdbl$objective == 'binary classification') {
+    cdbl$ROC = pROC::roc(y, yHat, quiet=T)
+    cdbl$AUC = pROC::auc(cdbl$ROC)
+    cdbl$accuracy = mean(y == (yHat > 0))
+  } else {
+    cdbl$RMSE = sqrt(mean((y - yHat)^2))
+    cdbl$Rsquared = 1 - cdbl$RMSE^2 / var(y)
+  }
   
   return(cdbl)
 }
@@ -68,7 +72,7 @@ trainRelaxation.CoDaBaseLearner = function(cdbl) {
   
   # Initializaing the intercept at the average of the data
   # this helps optimization greatly
-  if (cdbl$mode == "classification") {
+  if (cdbl$objective == "binary classification") {
     loss_func = 'binary_crossentropy'
     if (abs(mean(1 / (1 + exp(-cdbl$boostingOffset))) - mean(cdbl$y)) < 0.001) {
       # Protect against numerical errors in glm() call
@@ -77,14 +81,14 @@ trainRelaxation.CoDaBaseLearner = function(cdbl) {
       tempGLM = stats::glm(cdbl$y ~ 1, offset=cdbl$boostingOffset, family='binomial')
       interceptInit = tempGLM$coef[[1]]
     }
-  } else if (cdbl$mode == "regression") {
+  } else if (cdbl$objective == "regression") {
     loss_func = 'mean_squared_error'
     interceptInit = mean(cdbl$y - cdbl$boostingOffset)
   }
   
   # Define the forward pass for our relaxation,
   # which differs for balances and amalgamations
-  if (cdbl$type == 'A') {
+  if (cdbl$logRatioType == 'A') {
     epsilon = cdbl$optParams$epsilonA
     forwardPass = function(x, mask = NULL) {
       softAssignment = 2 * keras::k_sigmoid(self$weights) - 1
@@ -96,7 +100,7 @@ trainRelaxation.CoDaBaseLearner = function(cdbl) {
       eta = self$slope * logRatio + self$intercept + self$boostingOffset
       keras::k_sigmoid(eta)
     }
-  } else if (cdbl$type == 'B') {
+  } else if (cdbl$logRatioType == 'B') {
     epsilon = cdbl$optParams$epsilonB
     forwardPass = function(x, mask = NULL) {
       softAssignment = 2 * keras::k_sigmoid(self$weights) - 1
@@ -268,8 +272,12 @@ findBestCutoff.CoDaBaseLearner = function(cdbl) {
     for (j in 1:numFolds) {
       cdbl = setInterceptAndSlope.CoDaBaseLearner(cdbl, cdbl$x[foldIdx != j,], cdbl$y[foldIdx != j], cdbl$boostingOffset[foldIdx != j])
       yHat = predict(cdbl, cdbl$x[foldIdx == j,]) + cdbl$boostingOffset[foldIdx == j]
-      ROC = pROC::roc(cdbl$y[foldIdx == j], yHat, quiet=T)
-      scores[i, j] = pROC::auc(ROC)
+      if (cdbl$objective == "binary classification") {
+        ROC = pROC::roc(cdbl$y[foldIdx == j], yHat, quiet=T)
+        scores[i, j] = pROC::auc(ROC)
+      } else if (cdbl$objective == "regression") {
+        scores[i, j] = -sqrt(mean((cdbl$y[foldIdx == j] - yHat)^2))
+      }
     }
   }
   # Now implement lambda-SE rule
@@ -290,7 +298,12 @@ findBestCutoff.CoDaBaseLearner = function(cdbl) {
     graphics::abline(lambdaSeRule, 0)
   }
   
-  noImprovement = lambdaSeRule < pROC::auc(pROC::roc(cdbl$y, cdbl$boostingOffset, quiet=T))
+  if (cdbl$objective == "binary classification") {
+    baseLineScore = pROC::auc(pROC::roc(cdbl$y, cdbl$boostingOffset, quiet=T))
+  } else if (cdbl$objective == "regression") {
+    baseLineScore = -sqrt(mean((cdbl$y - cdbl$boostingOffset)^2))
+  }
+  noImprovement = lambdaSeRule < baseLineScore
   if (noImprovement) {
     bestCutoff = 1.1 # bigger than the softAssignment
   }
@@ -319,13 +332,12 @@ setInterceptAndSlope.CoDaBaseLearner = function(cdbl, x, y, boostingOffset) {
   # Otherwise, we have a non-empty SLR, so we compute it's regression coefficient
   logRatio = computeLogRatio.CoDaBaseLearner(cdbl, x)
   dat = data.frame(x=logRatio, y=y)
-  if (cdbl$mode == "classification") {
+  if (cdbl$objective == "binary classification") {
     glm = stats::glm(y~x, family='binomial', data=dat, offset=boostingOffset)
-  } else if (cdbl$mode == "regression") {
-    warning("Not tested")
-    glm = stats::glm(y~x, family='normal', data=dat, offset=boostingOffset)
+  } else if (cdbl$objective == "regression") {
+    glm = stats::glm(y~x, family='gaussian', data=dat, offset=boostingOffset)
   } else {
-    stop("Not implemented mode=", cdbl$mode)
+    stop("Not implemented objective=", cdbl$objective)
   }
   cdbl$intercept = glm$coefficients[[1]]
   cdbl$slope = glm$coefficients[[2]]
@@ -338,12 +350,12 @@ computeLogRatio.CoDaBaseLearner = function(cdbl, x) {
   if (!any(cdbl$hard$numerator) | !any(cdbl$hard$denominator)) {
     logRatio = rowSums(x * 0)
   } else { # we have a bona fide log-ratio
-    if (cdbl$type == 'A') {
+    if (cdbl$logRatioType == 'A') {
       epsilon = cdbl$optParams$epsilonA
       pvePart = rowSums(x[, cdbl$hard$numerator, drop=F]) # drop=F to keep as matrix
       nvePart = rowSums(x[, cdbl$hard$denominator, drop=F])
       logRatio = log(pvePart + epsilon) - log(nvePart + epsilon)
-    } else if (cdbl$type == 'B') {
+    } else if (cdbl$logRatioType == 'B') {
       pvePart = rowMeans(log(x[, cdbl$hard$numerator, drop=F])) # drop=F to keep as matrix
       nvePart = rowMeans(log(x[, cdbl$hard$denominator, drop=F]))
       logRatio = pvePart - nvePart
@@ -360,6 +372,9 @@ predict.CoDaBaseLearner = function(cdbl, x, logits=T) {
   if (logits) {
     return(eta)
   } else {
+    if (cdbl$objective == 'regression') {
+      stop("Logits argument should only be used for classification, not regression.")
+    }
     return(1 / (1 + exp(-eta)))
   }
 }
@@ -367,16 +382,18 @@ predict.CoDaBaseLearner = function(cdbl, x, logits=T) {
 
 #' codacore
 #' 
-#' This function implements the codacore algorithm described in https://doi.org/10.1101/2021.02.11.430695.
+#' This function implements the codacore algorithm described in Gordon-Rodriguez et al. 2021 
+#' (https://doi.org/10.1101/2021.02.11.430695).
 #' 
 #' @param x A data.frame of the compositional predictor variables.
 #' @param y A data.frame of the response variables.
-#' @param type A string indicating whether to use "balances" or "amalgamations".
-#' Also accepts "balance", "B", "ILR", or "amalgam", "A", "SLR".
-#' Note that the current implementation for balances is not strictly an ILR,
-#' but rather just a collection of balances (which are possibly non-orthogonal
-#' in the Aitchison sense).
-#' @param mode A string indicating "classification" or "regression".
+#' @param logRatioType A string indicating whether to use "balances" or "amalgamations".
+#'  Also accepts "balance", "B", "ILR", or "amalgam", "A", "SLR".
+#'  Note that the current implementation for balances is not strictly an ILR,
+#'  but rather just a collection of balances (which are possibly non-orthogonal
+#'  in the Aitchison sense).
+#' @param objective A string indicating "binary classification" or "regression". By default,
+#'  it is NULL and gets inferred from the values in y.
 #' @param lambda A numeric. Corresponds to the "lambda-SE" rule. Sets the "regularization strength"
 #'  used by the algorithm to decide how to harden the ratio. 
 #'  Larger numbers tend to yield fewer, more sparse ratios.
@@ -405,8 +422,8 @@ predict.CoDaBaseLearner = function(cdbl, x, logits=T) {
 codacore <- function(
   x,
   y,
-  type='balances',
-  mode='classification',
+  logRatioType='balances',
+  objective=NULL,
   lambda=1.0,
   shrinkage=1.0,
   maxBaseLearners=10,
@@ -419,26 +436,43 @@ codacore <- function(
   # Convert x and y to the appropriate objects
   x = .prepx(x)
   y = .prepy(y)
-
-  # Convert type to a unique label:
-  if (type %in% c('amalgamations', 'amalgam', 'A', 'SLR')) {
-    type='A'
-  } else if (type %in% c('balances', 'balance', 'B', 'ILR')) {
-    type='B'
-  } else {
-    stop('Invalid type argument given: ', type)
-  }
   
-  if (any(x == 0)) {
-    if (type == 'A') {
-      warning("The data contain zeros. An epsilon is used to prevent divide-by-zero errors.")
-    } else if (type == 'B') {
-      stop("The data contain zeros. Balances cannot be used in this case.")
+  # Check whether we are in regression or classification mode by inspecting y
+  if (is.null(objective)) {
+    distinct_values = length(unique(y))
+    if (distinct_values == 2) {
+      objective = 'binary classification'
+    } else if (class(y) == 'factor') {
+      stop("Multi-class classification note yet implemented.")
+    } else if (class(y) == 'numeric') {
+      objective = 'regression'
+      if (distinct_values < 10) {
+        warning("Response only has ", distinct_values, " distinct values.")
+        warning("Consider changing the objective function.")
+      }
     }
   }
   
-  if (mode != 'classification') {
-    stop("Mode: ", mode, " not yet implemented.")
+  if (! objective %in% c('binary classification', 'regression')) {
+    stop("Objective: ", objective, " not yet implemented.")
+  }
+  
+
+  # Convert logRatioType to a unique label:
+  if (logRatioType %in% c('amalgamations', 'amalgam', 'A', 'SLR')) {
+    logRatioType='A'
+  } else if (logRatioType %in% c('balances', 'balance', 'B', 'ILR')) {
+    logRatioType='B'
+  } else {
+    stop('Invalid logRatioType argument given: ', logRatioType)
+  }
+  
+  if (any(x == 0)) {
+    if (logRatioType == 'A') {
+      warning("The data contain zeros. An epsilon is used to prevent divide-by-zero errors.")
+    } else if (logRatioType == 'B') {
+      stop("The data contain zeros. Balances cannot be used in this case.")
+    }
   }
   
   if (!overlap) {
@@ -497,8 +531,8 @@ codacore <- function(
       x=x,
       y=y,
       boostingOffset=boostingOffset,
-      type=type,
-      mode=mode,
+      logRatioType=logRatioType,
+      objective=objective,
       lambda=lambda,
       optParams=optParams,
       cvParams=cvParams,
@@ -511,8 +545,12 @@ codacore <- function(
       cat('\nLog-ratio indexes:')
       cat('\nNumerator =', which(cdbl$hard$numerator))
       cat('\nDenominator =', which(cdbl$hard$denominator))
-      cat('\nAccuracy:', cdbl$accuracy)
-      cat('\nAUC:', cdbl$AUC)
+      if (objective == 'binary classification') {
+        cat('\nAccuracy:', cdbl$accuracy)
+        cat('\nAUC:', cdbl$AUC)
+      } else if (objective == 'regression') {
+        cat('\nRMSE', cdbl$RMSE)
+      }
       cat('\nTime taken:', endTime - startTime)
     }
     
@@ -526,15 +564,16 @@ codacore <- function(
     # If AUC is ~1, we stop (we separated the training data):
     # Note this won't always get caught by previous check since separability can lead to
     # numerical overflow which throws an error rather than finding an empty base learner
-    if (cdbl$AUC > 0.999) {break}
+    if (cdbl$objective == 'binary classification' && cdbl$AUC > 0.999) {break}
+    if (cdbl$objective == 'regression' && cdbl$Rsquared > 0.999) {break}
   }
   
   cdcr = list(
     ensemble=ensemble,
     x = x,
     y = y,
-    mode=mode,
-    type=type,
+    objective=objective,
+    logRatioType=logRatioType,
     lambda=lambda,
     shrinkage=shrinkage,
     maxBaseLearners=maxBaseLearners,
@@ -566,10 +605,7 @@ predict.codacore = function(cdcr, x, logits=T) {
 #' @param x A codacore object.
 #' @param ... Not used.
 #'
-#' @return
 #' @export
-#'
-#' @examples
 print.codacore = function(x, ...) {
   # TODO: Make this into a table to print all at once
   cat("\nNumber of base learners found:", length(x$ensemble))
@@ -593,26 +629,27 @@ print.codacore = function(x, ...) {
 #' @param x A codacore object.
 #' @param ... Not used.
 #'
-#' @return
 #' @export
-#'
-#' @examples
 plot.codacore = function(x, ...) {
-  cols = c("black", "gray40", "gray60", "gray80")
-  lwds = c(2.0, 1.5, 1.2, 0.8)
-  graphics::plot(x$ensemble[[1]]$ROC)
-  for (i in 2:min(4, length(x$ensemble))) {
-    graphics::lines(x$ensemble[[i]]$ROC$specificities, x$ensemble[[i]]$ROC$sensitivities, col=cols[i], lwd=lwds[i])
+  if (x$objective == 'regression') {
+    stop("Plot function not yet implemented for regression mode.")
+  } else if (x$objective == 'binary classification') {
+    cols = c("black", "gray40", "gray60", "gray80")
+    lwds = c(2.0, 1.5, 1.2, 0.8)
+    graphics::plot(x$ensemble[[1]]$ROC)
+    for (i in 2:min(4, length(x$ensemble))) {
+      graphics::lines(x$ensemble[[i]]$ROC$specificities, x$ensemble[[i]]$ROC$sensitivities, col=cols[i], lwd=lwds[i])
+    }
+    graphics::legend(
+      "bottomright",
+      c("Base Learner 4", "Base Learner 3", "Base Learner 2", "Base Learner 1"),
+      # fill=c("gray90", "gray80", "gray50", "black"),
+      lty=1,
+      # bty='n'
+      col=rev(cols),
+      lwd=rev(lwds) + 0.5
+    )
   }
-  graphics::legend(
-    "bottomright",
-     c("Base Learner 4", "Base Learner 3", "Base Learner 2", "Base Learner 1"),
-     # fill=c("gray90", "gray80", "gray50", "black"),
-     lty=1,
-     # bty='n'
-     col=rev(cols),
-     lwd=rev(lwds) + 0.5
-  )
 }
 
 
@@ -683,14 +720,14 @@ getLogRatios <- function(cdcr, x=NULL){
     x = cdcr$x
   }
   
-  if (cdcr$type == 'A') {
+  if (cdcr$logRatioType == 'A') {
     epsilonA = cdcr$optParams$epsilonA
     ratios <- lapply(cdcr$ensemble, function(a){
       num <- rowSums(x[, a$hard$numerator, drop=FALSE]) + epsilonA
       den <- rowSums(x[, a$hard$denominator, drop=FALSE]) + epsilonA
       log(num/den)
     })
-  } else if (cdcr$type == 'B') {
+  } else if (cdcr$logRatioType == 'B') {
     ratios <- lapply(cdcr$ensemble, function(a){
       num <- rowMeans(log(x[, a$hard$numerator, drop=FALSE]))
       den <- rowMeans(log(x[, a$hard$denominator, drop=FALSE]))
@@ -714,7 +751,12 @@ getLogRatios <- function(cdcr, x=NULL){
 }
 
 .prepy = function(y) {
-  if (class(y) == 'data.frame') {y = y[[1]]}
-  if (class(y) == 'factor') {y = as.numeric(y) - 1}
+  if (class(y) == 'data.frame') {
+    if (ncol(y) > 1) {
+      stop("Response should be 1-dimensional.")
+    }
+    y = y[[1]]
+  }
   return(y)
 }
+

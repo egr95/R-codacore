@@ -9,13 +9,14 @@
 #' The response y is a binary indicator.
 #' The rule linking x and y can be a balance or an amalgamation.
 #'
-#' @param n Number of observations
-#' @param p Number of covariates
+#' @param n Number of observations.
+#' @param p Number of covariates.
+#' @param outputType A string indicating 'binary' or 'continuous'.
 #' @param logratio A string indicating 'simple', 'balance', or 
-#'     'amalgamation'
+#'     'amalgamation'.
 #'
 #' @return A list containing a matrix of inputs and a vector of outputs
-simulateHTS = function(n, p, logratio = 'simple'){
+simulateHTS = function(n, p, outputType = 'binary', logratio = 'simple'){
   
   # Simulate independent variables
   alpha0 = rep(1.0, p) / log(p)
@@ -52,8 +53,14 @@ simulateHTS = function(n, p, logratio = 'simple'){
     stop("Variable logratio incorrectly specified.")
   }
   
-  outProb = 1 / (1 + exp(-(eta - mean(eta)))) * 1.0
-  y = stats::rbinom(n, 1, outProb)
+  if (outputType == 'binary') {
+    outProb = 1 / (1 + exp(-(eta - mean(eta)))) * 1.0
+    y = stats::rbinom(n, 1, outProb)
+  } else if (outputType == 'continuous') {
+    y = stats::rnorm(n, eta)
+  } else {
+    stop("Argument outputType:", outputType, ", not recognized")
+  }
   
   return(list(x=data.frame(X), y=data.frame(y)))
 }

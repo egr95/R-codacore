@@ -7,8 +7,8 @@
 codacore(
   x,
   y,
-  type = "balances",
-  mode = "classification",
+  logRatioType = "balances",
+  objective = NULL,
   lambda = 1,
   shrinkage = 1,
   maxBaseLearners = 10,
@@ -23,13 +23,14 @@ codacore(
 
 \item{y}{A data.frame of the response variables.}
 
-\item{type}{A string indicating whether to use "balances" or "amalgamations".
+\item{logRatioType}{A string indicating whether to use "balances" or "amalgamations".
 Also accepts "balance", "B", "ILR", or "amalgam", "A", "SLR".
 Note that the current implementation for balances is not strictly an ILR,
 but rather just a collection of balances (which are possibly non-orthogonal
 in the Aitchison sense).}
 
-\item{mode}{A string indicating "classification" or "regression".}
+\item{objective}{A string indicating "binary classification" or "regression". By default,
+it is NULL and gets inferred from the values in y.}
 
 \item{lambda}{A numeric. Corresponds to the "lambda-SE" rule. Sets the "regularization strength"
 used by the algorithm to decide how to harden the ratio. 
@@ -60,5 +61,6 @@ during CV process).}
 \item{overlap}{TODO: To be implemented}
 }
 \description{
-This function implements the codacore algorithm described in https://doi.org/10.1101/2021.02.11.430695.
+This function implements the codacore algorithm described in Gordon-Rodriguez et al. 2021 
+(https://doi.org/10.1101/2021.02.11.430695).
 }

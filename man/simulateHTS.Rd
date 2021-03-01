@@ -4,15 +4,17 @@
 \alias{simulateHTS}
 \title{simulateHTS}
 \usage{
-simulateHTS(n, p, logratio = "simple")
+simulateHTS(n, p, outputType = "binary", logratio = "simple")
 }
 \arguments{
-\item{n}{Number of observations}
+\item{n}{Number of observations.}
 
-\item{p}{Number of covariates}
+\item{p}{Number of covariates.}
+
+\item{outputType}{A string indicating 'binary' or 'continuous'.}
 
 \item{logratio}{A string indicating 'simple', 'balance', or 
-'amalgamation'}
+'amalgamation'.}
 }
 \value{
 A list containing a matrix of inputs and a vector of outputs

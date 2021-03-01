@@ -5,7 +5,7 @@ A self-contained, up-to-date implementation of [CoDaCoRe](https://www.biorxiv.or
 For an equivalent implementation in python, check [py-codacore](https://github.com/egr95/py-codacore). If you are interested in reproducing the results in the [original paper](add_arxiv_link), check [this repo](https://github.com/cunningham-lab/codacore).
 
 Note this repository is under active development. If you would like to use CoDaCoRe on your dataset, and have any questions regarding the installation, usage, implementation, or model itself, do not hesitate to contact <eg2912@columbia.edu>.
-Contributions and fixes are also welcome -- please create an issue, submit a pull request, or email me.
+Contributions and fixes are also welcome - please create an issue, submit a pull request, or email me.
 
 ## How to run CoDaCoRe
 

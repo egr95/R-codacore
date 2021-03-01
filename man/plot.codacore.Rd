@@ -11,9 +11,6 @@
 
 \item{...}{Not used.}
 }
-\value{
-
-}
 \description{
 plot
 }
