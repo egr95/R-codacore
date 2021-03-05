@@ -16,6 +16,8 @@
 #'     'amalgamation'.
 #'
 #' @return A list containing a matrix of inputs and a vector of outputs
+#' 
+#' @export
 simulateHTS = function(n, p, outputType = 'binary', logratio = 'simple'){
   
   # Simulate independent variables

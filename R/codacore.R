@@ -55,7 +55,7 @@ library(keras)
     cdbl$accuracy = mean(y == (yHat > 0))
   } else {
     cdbl$RMSE = sqrt(mean((y - yHat)^2))
-    cdbl$Rsquared = 1 - cdbl$RMSE^2 / var(y)
+    cdbl$Rsquared = 1 - cdbl$RMSE^2 / stats::var(y)
   }
   
   return(cdbl)
@@ -382,7 +382,7 @@ predict.CoDaBaseLearner = function(cdbl, x, logits=T) {
 
 #' codacore
 #' 
-#' This function implements the codacore algorithm described in Gordon-Rodriguez et al. 2021 
+#' This function implements the codacore algorithm described by Gordon-Rodriguez et al. 2021 
 #' (https://doi.org/10.1101/2021.02.11.430695).
 #' 
 #' @param x A data.frame of the compositional predictor variables.

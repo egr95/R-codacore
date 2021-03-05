@@ -11,6 +11,8 @@ Contributions and fixes are also welcome - please create an issue, submit a pull
 
 1. To install codacore:
 
+In order to install codacore from GitHub, we will need the [devtools package](https://www.r-project.org/nosvn/pandoc/devtools.html).
+
 ```r
 devtools::install_github("egr95/R-codacore", ref="main")
 ```
@@ -29,7 +31,7 @@ plot(model)
 
 3. Tensorflow and Keras:
 
-Note that CoDaCoRe requires a working installation of Tensorflow.
+Note that CoDaCoRe requires a working installation of [TensorFlow](https://tensorflow.rstudio.com/).
 If you do not have Tensorflow previously installed, when you run ```codacore()``` for the first time you will likely encounter an error message of the form:
 ```r
 > codacore(x, y)

@@ -61,6 +61,6 @@ during CV process).}
 \item{overlap}{TODO: To be implemented}
 }
 \description{
-This function implements the codacore algorithm described in Gordon-Rodriguez et al. 2021 
+This function implements the codacore algorithm described by Gordon-Rodriguez et al. 2021 
 (https://doi.org/10.1101/2021.02.11.430695).
 }
