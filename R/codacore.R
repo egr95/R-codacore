@@ -608,15 +608,20 @@ predict.codacore = function(cdcr, x, logits=T) {
 #' @export
 print.codacore = function(x, ...) {
   # TODO: Make this into a table to print all at once
-  cat("\nNumber of base learners found:", length(x$ensemble))
+  cat("\nNumber of log-ratios found:", length(x$ensemble))
   for (i in 1:length(x$ensemble)) {
     cat("\n***")
-    cat("\nBase Learner", i)
+    cat("\nLog-ratio rank", i)
     cdbl = x$ensemble[[i]]
     hard = x$ensemble[[i]]$hard
-    cat("\nNumerator:", which(cdbl$hard$numerator))
-    cat("\nDenominator:", which(cdbl$hard$denominator))
-    cat("\nIntercept:", cdbl$intercept)
+    if (is.null(rownames(cdbl$x))) {
+      cat("\nNumerator:", which(cdbl$hard$numerator))
+      cat("\nDenominator:", which(cdbl$hard$denominator))
+    } else {
+      cat("\nNumerator:", colnames(cdbl$x)[which(cdbl$hard$numerator)])
+      cat("\nDenominator:", colnames(cdbl$x)[which(cdbl$hard$denominator)])
+    }
+    # cat("\nIntercept:", cdbl$intercept)
     cat("\nSlope:", cdbl$slope)
     cat("\nAUC:", cdbl$AUC)
   }
@@ -756,6 +761,9 @@ getLogRatios <- function(cdcr, x=NULL){
       stop("Response should be 1-dimensional.")
     }
     y = y[[1]]
+  }
+  if (class(y) == 'factor') {
+    y = as.numeric(y) - 1
   }
   return(y)
 }
