@@ -1,0 +1,85 @@
+---
+title: "CoDaCoRe Tutorial on Chron's Disease Data"
+author: "Elliott Gordon-Rodriguez"
+date: "3/12/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## The basics
+
+We assume a working installation of `codacore`, as well as the `selbal` package ([link](https://github.com/UVic-omics/selbal/blob/master/vignettes/vignette.Rmd)), from which we will borrow the Crohn disease data.
+```{r}
+library("codacore")
+library("selbal")
+data("Crohn")
+x <- Crohn[, -ncol(Crohn)]
+y <- Crohn[, ncol(Crohn)]
+```
+
+Our goal is to predict disease status from microbe counts. Our input variable consists of the abundance of 48 microbial species in 975 samples.
+```{r}
+dim(x)
+```
+
+The output variable is a binary indicator.
+```{r}
+table(y)
+```
+
+Prior to fitting CoDaCoRe, we must impute any counts of zero in our input variable (a standard pre-processing step for ratio-based and CoDa methods).
+```{r}
+x <- x + 1
+```
+
+Next, we split our data into a training and a test set (to keep things simple we do this naively at random, though in practice stratified sampling is preferable).
+```{r}
+# For reproducibility, we set a random seed (including in TensorFlow, used by codacore)
+set.seed(0); library(tensorflow); tf$random$set_seed(0)
+trainIndex <- sample(1:nrow(x), 0.8 * nrow(x))
+xTrain <- x[trainIndex,]
+yTrain <- y[trainIndex]
+```
+
+Now we are ready to fit CoDaCoRe. Notice the fast runtime (as compared to, for example, `selbal.cv`).
+```{r}
+model = codacore(
+  xTrain,
+  yTrain,
+  logRatioType = 'balances', # can also use 'amalgamations'
+  lambda = 1                 # regularization parameter (1 corresponds to "1SE rule")
+)
+```
+
+Next we can check the learned output of the model: what inputs were included in the learned log-ratios, how strongly associated they are to the response, and how well they classified the data.
+```{r}
+print(model)
+```
+
+The most predictive ratio identified by codacore is g__Roseburia / g__Dialister, which can be visualized with the `plot` function.
+```{r}
+plot(model)
+```
+
+We can also use our trained model to classify new samples.
+```{r}
+xTest <- x[-trainIndex,]
+yTest <- y[-trainIndex]
+yHat = predict(model, xTest, logits=F)
+# Convert probabilities into a binary class
+failure = yHat < 0.5
+success = yHat >= 0.5
+yHat[failure] = levels(y)[1]
+yHat[success] = levels(y)[2]
+cat("Classification accuracy on test set =", round(mean(yHat == yTest), 2))
+```
+
+## Tuning lambda
+Coming soon
+
+## Using amalgamations (summed-log-ratios)
+Coming soon
+
