@@ -83,3 +83,12 @@ Coming soon
 ## Using amalgamations (summed-log-ratios)
 Coming soon
 
+## Partialling out additional covariates
+Coming soon
+
+## Unsupervised Learning
+Coming soon
+
+## Controlling overlap between logratios
+Coming soon
+
