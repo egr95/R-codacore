@@ -9,8 +9,6 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## The basics
-
 We assume a working installation of `codacore`, as well as the `selbal` package ([link](https://github.com/UVic-omics/selbal/blob/master/vignettes/vignette.Rmd)), from which we will borrow the Crohn disease data.
 ```{r}
 library("codacore")
@@ -76,6 +74,9 @@ yHat[failure] = levels(y)[1]
 yHat[success] = levels(y)[2]
 cat("Classification accuracy on test set =", round(mean(yHat == yTest), 2))
 ```
+
+## Continuous outcomes
+Coming soon
 
 ## Tuning lambda
 Coming soon
