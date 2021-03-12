@@ -7,6 +7,8 @@ For an equivalent implementation in python, check [py-codacore](https://github.c
 Note this repository is under active development. If you would like to use CoDaCoRe on your dataset, and have any questions regarding the installation, usage, implementation, or model itself, do not hesitate to contact <eg2912@columbia.edu>.
 Contributions and fixes are also welcome - please create an issue, submit a pull request, or email me.
 
+A more in-depth tutorial can be found [here](https://github.com/egr95/R-codacore/blob/main/docs/chron.Rmd), but it will require having gone through the installation steps below first.
+
 ## How to run CoDaCoRe
 
 1. To install codacore:
