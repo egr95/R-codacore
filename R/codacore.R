@@ -586,11 +586,24 @@ codacore <- function(
 }
 
 
-predict.codacore = function(cdcr, x, logits=T) {
+#' predict
+#'
+#' @param object A codacore object.
+#' @param x A set of inputs to our model.
+#' @param logits Whether to return outputs in logit space
+#'  (as opposed to probability space). Should always be set
+#'  to TRUE for regression with continuous outputs, but can
+#'  be toggled for classification problems.
+#'
+#' @export
+predict.codacore = function(object, x, logits=T) {
   x = .prepx(x)
   yHat = rep(0, nrow(x))
-  for (cdbl in cdcr$ensemble) {
-    yHat = yHat + cdcr$shrinkage * predict(cdbl, x)
+  if (object$objective == 'regression' & !logits) {
+    stop("For continuous outputs, should not predict in probability space!")
+  }
+  for (cdbl in object$ensemble) {
+    yHat = yHat + object$shrinkage * predict(cdbl, x)
   }
   if (logits) {
     return(yHat)
@@ -623,7 +636,9 @@ print.codacore = function(x, ...) {
     }
     # cat("\nIntercept:", cdbl$intercept)
     cat("\nSlope:", cdbl$slope)
-    cat("\nAUC:", cdbl$AUC)
+    if (cdbl$objective == 'binary classification') {
+      cat("\nAUC:", cdbl$AUC)
+    }
   }
   cat("\n") # one final new line at end to finish print block
 }
@@ -639,21 +654,34 @@ plot.codacore = function(x, ...) {
   if (x$objective == 'regression') {
     stop("Plot function not yet implemented for regression mode.")
   } else if (x$objective == 'binary classification') {
-    cols = c("black", "gray40", "gray60", "gray80")
-    lwds = c(2.0, 1.5, 1.2, 0.8)
-    graphics::plot(x$ensemble[[1]]$ROC)
-    for (i in 2:min(4, length(x$ensemble))) {
-      graphics::lines(x$ensemble[[i]]$ROC$specificities, x$ensemble[[i]]$ROC$sensitivities, col=cols[i], lwd=lwds[i])
-    }
-    graphics::legend(
-      "bottomright",
-      c("Base Learner 4", "Base Learner 3", "Base Learner 2", "Base Learner 1"),
-      # fill=c("gray90", "gray80", "gray50", "black"),
-      lty=1,
-      # bty='n'
-      col=rev(cols),
-      lwd=rev(lwds) + 0.5
+
+    # cols = c("black", "gray40", "gray60", "gray80")
+    # lwds = c(2.0, 1.5, 1.2, 0.8)
+    # graphics::plot(x$ensemble[[1]]$ROC)
+    # for (i in 2:min(4, length(x$ensemble))) {
+    #   graphics::lines(x$ensemble[[i]]$ROC$specificities, x$ensemble[[i]]$ROC$sensitivities, col=cols[i], lwd=lwds[i])
+    # }
+    # graphics::legend(
+    #   "bottomright",
+    #   c("Base Learner 4", "Base Learner 3", "Base Learner 2", "Base Learner 1"),
+    #   # fill=c("gray90", "gray80", "gray50", "black"),
+    #   lty=1,
+    #   # bty='n'
+    #   col=rev(cols),
+    #   lwd=rev(lwds) + 0.5
+    # )
+    
+    logRatio = getLogRatios(x)[, 1]
+    
+    boxplot(
+      logRatio ~ x$y,
+      col=c('orange','lightblue'),
+      main='Distribution of principal (1st) log-ratio',
+      xlab='Log-ratio score',
+      ylab='Outcome',
+      horizontal=TRUE
     )
+
   }
 }
 
