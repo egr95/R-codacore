@@ -52,7 +52,7 @@ testthat::test_that("balances", {
   x = HTS$x + 1
   y = HTS$y
   model = codacore(x, y, logRatioType='B', objective='regression')
-  testthat::expect_equal(model$ensemble[[1]]$Rsquared, 0.223, tolerance=0.001)
+  testthat::expect_equal(model$ensemble[[1]]$Rsquared, 0.226, tolerance=0.001)
   
 })
 
@@ -80,7 +80,7 @@ testthat::test_that("amalgamations", {
   testthat::expect_true(getNumeratorParts(model, 1)[1])
   testthat::expect_true(getNumeratorParts(model, 1)[2])
   testthat::expect_true(getDenominatorParts(model, 1)[3])
-  testthat::expect_equal(model$ensemble[[1]]$Rsquared, 0.416, tolerance=0.001)
+  testthat::expect_equal(model$ensemble[[1]]$Rsquared, 0.504, tolerance=0.001)
   
 })
 

@@ -2,18 +2,16 @@
 
 A self-contained, up-to-date implementation of [CoDaCoRe](https://www.biorxiv.org/content/10.1101/2021.02.11.430695v1), in the R programming language, by the original authors.
 
-For an equivalent implementation in python, check [py-codacore](https://github.com/egr95/py-codacore). If you are interested in reproducing the results in the [original paper](add_arxiv_link), check [this repo](https://github.com/cunningham-lab/codacore).
+The [CoDaCoRe guide](https://egr95.github.io/R-codacore/crohn.html) contains a detailed tutorial on usage and functionality (note this tutorial assumes a prior installation of the package as per the steps below).
+
+For an equivalent implementation in python, check [py-codacore](https://github.com/egr95/py-codacore). If you are interested in reproducing the results in the [original paper](https://www.biorxiv.org/content/10.1101/2021.02.11.430695v1), check [this repo](https://github.com/cunningham-lab/codacore).
 
 Note this repository is under active development. If you would like to use CoDaCoRe on your dataset, and have any questions regarding the installation, usage, implementation, or model itself, do not hesitate to contact <eg2912@columbia.edu>.
-Contributions and fixes are also welcome - please create an issue, submit a pull request, or email me.
+Contributions, fixes, and feature requests are also welcome - please create an issue, submit a pull request, or email me.
 
-A more in-depth tutorial can be found [here](https://egr95.github.io/R-codacore/crohn.html), but it will require having gone through the installation steps below first.
+## How to install and run CoDaCoRe
 
-## How to run CoDaCoRe
-
-1. To install codacore:
-
-In order to install codacore from GitHub, we will need the [devtools package](https://www.r-project.org/nosvn/pandoc/devtools.html).
+1. In order to install codacore from GitHub, we will need the [devtools package](https://www.r-project.org/nosvn/pandoc/devtools.html).
 
 ```r
 devtools::install_github("egr95/R-codacore", ref="main")
@@ -22,10 +20,12 @@ devtools::install_github("egr95/R-codacore", ref="main")
 2. To fit codacore on some data:
 ```r
 library("codacore")
+help(codacore) # if in doubt, check documentation
 model = codacore(
     x, # compositional input, e.g., HTS count data 
     y, # response variable, typically a 0/1 binary indicator 
-    type = "balances" # can use "amalgamations" instead, or abbreviations "B" and "A"
+    type = "balances", # can use "amalgamations" instead, or abbreviations "B" and "A"
+    lambda = 1 # regularization strength (default corresponds to 1SE rule) 
 )
 print(model)
 plot(model)
@@ -60,13 +60,13 @@ library("keras")
 install_keras()
 ```
 
-Note also that you may have to restart your R session between installation of codacore, tensorflow, and keras.
+Note also that you may have to restart your R session between installation of ```codacore```, ```tensorflow```, and ```keras```.
 
 4. Running on an HPC cluster:
 
 Again, you must have a working installation of Tensorflow and Keras.
 Depending on your permissions, you may have to install these to a personal directory, using ```.libPaths```.
-My personal recommendation is to skip ```.libPaths``` altogether and use an R conda environment, e.g.,
+My personal recommendation is to skip ```.libPaths``` altogether and use a conda environment, e.g.,
 ```sh
 conda create -n <my-env-name> r-essentials r-base
 conda activate <my-env-name>
@@ -75,10 +75,6 @@ conda install -c conda-forge r-keras
 conda install -c conda-forge r-devtools 
 ```
 
-### Unsupervised learning
+## Additional functionality
 
-Coming soon... If you would like access to an early version, get [in touch](mailto:eg2912@columbia.edu).
-
-### Multi-omics
-
-Coming soon... If you would like access to an early version, get [in touch](mailto:eg2912@columbia.edu).
+Some of the additional functionality of our package, including unsupervised learning and multi-omics, is discussed in the [tutorial](https://egr95.github.io/R-codacore/crohn.html). For feature requests, or to get access to an early version, get [in touch](mailto:eg2912@columbia.edu).

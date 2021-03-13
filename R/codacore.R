@@ -72,6 +72,7 @@ trainRelaxation.CoDaBaseLearner = function(cdbl) {
   
   # Initializaing the intercept at the average of the data
   # this helps optimization greatly
+  # TODO: should experiment with slopeInit parameter for potential gains
   if (cdbl$objective == "binary classification") {
     loss_func = 'binary_crossentropy'
     if (abs(mean(1 / (1 + exp(-cdbl$boostingOffset))) - mean(cdbl$y)) < 0.001) {
@@ -81,9 +82,13 @@ trainRelaxation.CoDaBaseLearner = function(cdbl) {
       tempGLM = stats::glm(cdbl$y ~ 1, offset=cdbl$boostingOffset, family='binomial')
       interceptInit = tempGLM$coef[[1]]
     }
+    slopeInit = 0.1
+    metrics = c('accuracy')
   } else if (cdbl$objective == "regression") {
     loss_func = 'mean_squared_error'
     interceptInit = mean(cdbl$y - cdbl$boostingOffset)
+    slopeInit = 0.1 # * stats::sd(cdbl$y - cdbl$boostingOffset)
+    metrics = c('mean_squared_error')
   }
   
   # Define the forward pass for our relaxation,
@@ -98,7 +103,8 @@ trainRelaxation.CoDaBaseLearner = function(cdbl) {
       logRatio = keras::k_log(pvePart + epsilon) - 
         keras::k_log(nvePart + epsilon)
       eta = self$slope * logRatio + self$intercept + self$boostingOffset
-      keras::k_sigmoid(eta)
+      # keras::k_sigmoid(eta)
+      eta
     }
   } else if (cdbl$logRatioType == 'B') {
     epsilon = cdbl$optParams$epsilonB
@@ -110,7 +116,8 @@ trainRelaxation.CoDaBaseLearner = function(cdbl) {
       logRatio = keras::k_dot(keras::k_log(x), pvePart) / keras::k_maximum(keras::k_sum(pvePart), epsilon) -
         keras::k_dot(keras::k_log(x), nvePart) / keras::k_maximum(keras::k_sum(nvePart), epsilon)
       eta = self$slope * logRatio + self$intercept + self$boostingOffset
-      keras::k_sigmoid(eta)
+      # keras::k_sigmoid(eta)
+      eta
     }
   }
   
@@ -148,7 +155,7 @@ trainRelaxation.CoDaBaseLearner = function(cdbl) {
         self$slope <- self$add_weight(
           name = 'slope', 
           shape = list(as.integer(1)),
-          initializer = keras::initializer_constant(0.1),
+          initializer = keras::initializer_constant(slopeInit),
           trainable = TRUE
         )
         self$boostingOffset <- self$add_weight(
@@ -182,14 +189,18 @@ trainRelaxation.CoDaBaseLearner = function(cdbl) {
     # use it in a model
     model <- keras::keras_model_sequential()
     model %>% codacoreLayer()
-    
+    if (cdbl$objective == "binary classification") {
+      model %>% layer_activation('sigmoid')
+    }
+
     # compile graph
     model %>% keras::compile(
       loss = loss_func,
       optimizer = keras::optimizer_sgd(lr=lr, momentum=cdbl$optParams$momentum),
       # optimizer = keras::optimizer_adam(lr=0.001),
-      metrics = c('accuracy')
+      metrics = metrics
     )
+    
     
     model %>% keras::fit(cdbl$x, cdbl$y, epochs=epochs, 
                          batch_size=cdbl$optParams$batchSize, 
@@ -385,8 +396,8 @@ predict.CoDaBaseLearner = function(cdbl, x, logits=T) {
 #' This function implements the codacore algorithm described by Gordon-Rodriguez et al. 2021 
 #' (https://doi.org/10.1101/2021.02.11.430695).
 #' 
-#' @param x A data.frame of the compositional predictor variables.
-#' @param y A data.frame of the response variables.
+#' @param x A data.frame or matrix of the compositional predictor variables.
+#' @param y A data.frame, matrix or vector of the response.
 #' @param logRatioType A string indicating whether to use "balances" or "amalgamations".
 #'  Also accepts "balance", "B", "ILR", or "amalgam", "A", "SLR".
 #'  Note that the current implementation for balances is not strictly an ILR,
@@ -397,6 +408,7 @@ predict.CoDaBaseLearner = function(cdbl, x, logits=T) {
 #' @param lambda A numeric. Corresponds to the "lambda-SE" rule. Sets the "regularization strength"
 #'  used by the algorithm to decide how to harden the ratio. 
 #'  Larger numbers tend to yield fewer, more sparse ratios.
+#' @param offset A numeric vector of the same length as y. Works similarly to the offset in a glm.
 #' @param shrinkage A numeric. Shrinkage factor applied to each base learner.
 #'  Defaults to 1.0, i.e., no shrinkage applied.
 #' @param maxBaseLearners An integer. The maximum number of log-ratios that the model will
@@ -425,6 +437,7 @@ codacore <- function(
   logRatioType='balances',
   objective=NULL,
   lambda=1.0,
+  offset=NULL,
   shrinkage=1.0,
   maxBaseLearners=10,
   optParams=list(),
@@ -436,7 +449,7 @@ codacore <- function(
   # Convert x and y to the appropriate objects
   x = .prepx(x)
   y = .prepy(y)
-  
+
   # Check whether we are in regression or classification mode by inspecting y
   if (is.null(objective)) {
     distinct_values = length(unique(y))
@@ -446,18 +459,36 @@ codacore <- function(
       stop("Multi-class classification note yet implemented.")
     } else if (class(y) == 'numeric') {
       objective = 'regression'
-      if (distinct_values < 10) {
+      if (distinct_values <= 10) {
         warning("Response only has ", distinct_values, " distinct values.")
         warning("Consider changing the objective function.")
       }
     }
   }
   
+  # Make sure we recognize objective
   if (! objective %in% c('binary classification', 'regression')) {
     stop("Objective: ", objective, " not yet implemented.")
   }
   
-
+  # Save names of labels if relevant
+  if (objective == 'binary classification' & class(y) == 'factor') {
+    yLevels = levels(y)
+    y = as.numeric(y) - 1
+  } else {
+    yLevels = NULL
+  }
+  
+  # In the regression case, standardize data and save scale
+  if (objective == 'regression') {
+    yMean = mean(y)
+    yScale = stats::sd(y)
+    y = (y - yMean) / yScale
+  } else {
+    yMean = NULL
+    yScale = NULL
+  }
+  
   # Convert logRatioType to a unique label:
   if (logRatioType %in% c('amalgamations', 'amalgam', 'A', 'SLR')) {
     logRatioType='A'
@@ -523,7 +554,11 @@ codacore <- function(
   ### Now we train codacore:
   # Initialize from an empty ensemble
   ensemble = list()
-  boostingOffset = y * 0.0
+  if (is.null(offset)) {
+    boostingOffset = y * 0.0
+  } else {
+    boostingOffset = offset
+  }
   maxBaseLearners = maxBaseLearners / shrinkage
   for (i in 1:maxBaseLearners) {
     startTime = Sys.time()
@@ -578,7 +613,10 @@ codacore <- function(
     shrinkage=shrinkage,
     maxBaseLearners=maxBaseLearners,
     optParams=optParams,
-    cvParams=cvParams
+    cvParams=cvParams,
+    yLevels=yLevels,
+    yMean=yMean,
+    yScale=yScale
   )
   class(cdcr) = "codacore"
   
@@ -589,26 +627,30 @@ codacore <- function(
 #' predict
 #'
 #' @param object A codacore object.
-#' @param x A set of inputs to our model.
+#' @param newx A set of inputs to our model.
 #' @param logits Whether to return outputs in logit space
 #'  (as opposed to probability space). Should always be set
 #'  to TRUE for regression with continuous outputs, but can
 #'  be toggled for classification problems.
+#' @param ... Not used.
 #'
 #' @export
-predict.codacore = function(object, x, logits=T) {
-  x = .prepx(x)
+predict.codacore = function(object, newx, logits=T, ...) {
+  x = .prepx(newx)
   yHat = rep(0, nrow(x))
-  if (object$objective == 'regression' & !logits) {
-    stop("For continuous outputs, should not predict in probability space!")
-  }
+
   for (cdbl in object$ensemble) {
     yHat = yHat + object$shrinkage * predict(cdbl, x)
   }
-  if (logits) {
-    return(yHat)
-  } else {
-    return(1 / (1 + exp(-yHat)))
+  
+  if (object$objective == 'binary classification') {
+    if (logits) {
+      return(yHat)
+    } else {
+      return(1 / (1 + exp(-yHat)))
+    }
+  } else if (object$objective == 'regression') {
+    return(yHat * object$yScale + object$yMean)
   }
 }
 
@@ -622,22 +664,27 @@ predict.codacore = function(object, x, logits=T) {
 print.codacore = function(x, ...) {
   # TODO: Make this into a table to print all at once
   cat("\nNumber of log-ratios found:", length(x$ensemble))
-  for (i in 1:length(x$ensemble)) {
-    cat("\n***")
-    cat("\nLog-ratio rank", i)
-    cdbl = x$ensemble[[i]]
-    hard = x$ensemble[[i]]$hard
-    if (is.null(rownames(cdbl$x))) {
-      cat("\nNumerator:", which(cdbl$hard$numerator))
-      cat("\nDenominator:", which(cdbl$hard$denominator))
-    } else {
-      cat("\nNumerator:", colnames(cdbl$x)[which(cdbl$hard$numerator)])
-      cat("\nDenominator:", colnames(cdbl$x)[which(cdbl$hard$denominator)])
-    }
-    # cat("\nIntercept:", cdbl$intercept)
-    cat("\nSlope:", cdbl$slope)
-    if (cdbl$objective == 'binary classification') {
-      cat("\nAUC:", cdbl$AUC)
+  if (length(x$ensemble) >= 1) {
+    for (i in 1:length(x$ensemble)) {
+      cat("\n***")
+      cat("\nLog-ratio rank", i)
+      cdbl = x$ensemble[[i]]
+      hard = x$ensemble[[i]]$hard
+      if (is.null(rownames(cdbl$x))) {
+        cat("\nNumerator:", which(cdbl$hard$numerator))
+        cat("\nDenominator:", which(cdbl$hard$denominator))
+      } else {
+        cat("\nNumerator:", colnames(cdbl$x)[which(cdbl$hard$numerator)])
+        cat("\nDenominator:", colnames(cdbl$x)[which(cdbl$hard$denominator)])
+      }
+      # cat("\nIntercept:", cdbl$intercept)
+      if (cdbl$objective == 'binary classification') {
+        cat("\nAUC:", cdbl$AUC)
+        cat("\nSlope:", cdbl$slope)
+      } else if (cdbl$objective == 'regression') {
+        cat("\nR squared:", cdbl$Rsquared)
+        cat("\nSlope:", cdbl$slope * cdbl$yScale)
+      }
     }
   }
   cat("\n") # one final new line at end to finish print block
@@ -645,6 +692,10 @@ print.codacore = function(x, ...) {
 
 
 #' plot
+#' 
+#' Plots a summary of a fitted codacore model.
+#' Credit to the authors of the selbal package (Rivera-Pinto et al., 2018),
+#' from whose package these plots were inspired.
 #'
 #' @param x A codacore object.
 #' @param ... Not used.
@@ -652,37 +703,68 @@ print.codacore = function(x, ...) {
 #' @export
 plot.codacore = function(x, ...) {
   if (x$objective == 'regression') {
-    stop("Plot function not yet implemented for regression mode.")
+
+    logRatio = getLogRatios(x)[, 1]
+    graphics::plot(logRatio, x$y, xlab='Log-ratio score', ylab='Response')
+    graphics::abline(x$ensemble[[1]]$intercept, x$ensemble[[1]]$slope, lwd=2)
+    
   } else if (x$objective == 'binary classification') {
 
-    # cols = c("black", "gray40", "gray60", "gray80")
-    # lwds = c(2.0, 1.5, 1.2, 0.8)
-    # graphics::plot(x$ensemble[[1]]$ROC)
-    # for (i in 2:min(4, length(x$ensemble))) {
-    #   graphics::lines(x$ensemble[[i]]$ROC$specificities, x$ensemble[[i]]$ROC$sensitivities, col=cols[i], lwd=lwds[i])
-    # }
-    # graphics::legend(
-    #   "bottomright",
-    #   c("Base Learner 4", "Base Learner 3", "Base Learner 2", "Base Learner 1"),
-    #   # fill=c("gray90", "gray80", "gray50", "black"),
-    #   lty=1,
-    #   # bty='n'
-    #   col=rev(cols),
-    #   lwd=rev(lwds) + 0.5
-    # )
-    
     logRatio = getLogRatios(x)[, 1]
     
-    boxplot(
-      logRatio ~ x$y,
+    # Convert 0/1 binary output to the original labels, if any
+    if (!is.null(x$yLevels)) {
+      y = x$yLevels[x$y + 1]
+    }
+    
+    graphics::boxplot(
+      logRatio ~ y,
       col=c('orange','lightblue'),
-      main='Distribution of principal (1st) log-ratio',
+      main='Distribution of 1st log-ratio',
       xlab='Log-ratio score',
       ylab='Outcome',
       horizontal=TRUE
     )
 
   }
+}
+
+
+#' plotROC
+#'
+#' @param cdcr A codacore object.
+#'
+#' @export
+plotROC = function(cdcr) {
+  
+  if (cdcr$objective != 'binary classification') {
+    stop("ROC curves undefined for binary classification")
+  }
+  cols = c("black", "gray50", "gray70", "gray80", "gray90")
+  lwds = c(2.0, 1.5, 1.2, 0.8, 0.6)
+  oldPar = graphics::par()$pty
+  graphics::par(pty = 's')
+  graphics::plot(cdcr$ensemble[[1]]$ROC)
+  legendCols = cols
+  numBL = length(cdcr$ensemble)
+  legendText = c()
+  legendLwds = c()
+  for (i in 1:min(5, numBL)) {
+    cdbl = cdcr$ensemble[[i]]
+    graphics::lines(cdbl$ROC$specificities, cdbl$ROC$sensitivities, col=cols[i], lwd=lwds[i])
+    legendText = c(legendText, paste0("Log-ratio: ", i, ", AUC: ", round(cdbl$AUC, 2)))
+    legendCols = c(legendCols, cols[i])
+    legendLwds = c(legendLwds, lwds[i])
+  }
+  graphics::legend(
+    "bottomright",
+    rev(legendText),
+    lty=1,
+    col=rev(legendCols),
+    lwd=rev(legendLwds) + 0.5
+  )
+  graphics::par(pty = oldPar)
+  
 }
 
 
@@ -764,7 +846,7 @@ getLogRatios <- function(cdcr, x=NULL){
     ratios <- lapply(cdcr$ensemble, function(a){
       num <- rowMeans(log(x[, a$hard$numerator, drop=FALSE]))
       den <- rowMeans(log(x[, a$hard$denominator, drop=FALSE]))
-      log(num/den)
+      num - den
     })
   }
   
@@ -772,6 +854,8 @@ getLogRatios <- function(cdcr, x=NULL){
   colnames(out) <- paste0("log-ratio", 1:ncol(out))
   return(out)
 }
+
+
 
 .prepx = function(x) {
   if (class(x) == 'data.frame') {x = as.matrix(x)}
@@ -789,9 +873,6 @@ getLogRatios <- function(cdcr, x=NULL){
       stop("Response should be 1-dimensional.")
     }
     y = y[[1]]
-  }
-  if (class(y) == 'factor') {
-    y = as.numeric(y) - 1
   }
   return(y)
 }

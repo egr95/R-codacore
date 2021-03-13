@@ -12,5 +12,7 @@
 \item{...}{Not used.}
 }
 \description{
-plot
+Plots a summary of a fitted codacore model.
+Credit to the authors of the selbal package (Rivera-Pinto et al., 2018),
+from whose package these plots were inspired.
 }

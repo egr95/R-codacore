@@ -4,17 +4,19 @@
 \alias{predict.codacore}
 \title{predict}
 \usage{
-\method{predict}{codacore}(object, x, logits = T)
+\method{predict}{codacore}(object, newx, logits = T, ...)
 }
 \arguments{
 \item{object}{A codacore object.}
 
-\item{x}{A set of inputs to our model.}
+\item{newx}{A set of inputs to our model.}
 
 \item{logits}{Whether to return outputs in logit space
 (as opposed to probability space). Should always be set
 to TRUE for regression with continuous outputs, but can
 be toggled for classification problems.}
+
+\item{...}{Not used.}
 }
 \description{
 predict

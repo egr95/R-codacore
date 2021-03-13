@@ -1,15 +1,17 @@
 ---
-title: "CoDaCoRe Tutorial on Chron's Disease Data"
+title: "CoDaCoRe Guide"
 author: "Elliott Gordon-Rodriguez"
 date: "3/12/2021"
 output: html_document
 ---
 
+## Training the model
+
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-We assume a working installation of `codacore`, as well as the `selbal` package ([link](https://github.com/UVic-omics/selbal/blob/master/vignettes/vignette.Rmd)), from which we will borrow the Crohn disease data.
+We assume a working installation of `codacore` ([link](https://github.com/egr95/R-codacore/blob/main/README.md)), as well as the `selbal` package ([link](https://github.com/UVic-omics/selbal/blob/master/vignettes/vignette.Rmd)), from which we will borrow the Crohn's disease data (Gevers et al. 2014 http://dx.doi.org/10.1016/j.chom.2014.02.005).
 ```{r}
 library("codacore")
 library("selbal")
@@ -18,17 +20,17 @@ x <- Crohn[, -ncol(Crohn)]
 y <- Crohn[, ncol(Crohn)]
 ```
 
-Our goal is to predict disease status from microbe counts. Our input variable consists of the abundance of 48 microbial species in 975 samples.
+Our goal is to identify ratio-based biomarkers that are predictive of disease status. Our input variable consists of the abundance of 48 microbial species in 975 samples.
 ```{r}
 dim(x)
 ```
 
-The output variable is a binary indicator.
+The output variable is a binary indicator (CD stands for Chron's disease).
 ```{r}
 table(y)
 ```
 
-Prior to fitting CoDaCoRe, we must impute any counts of zero in our input variable (a standard pre-processing step for ratio-based and CoDa methods).
+Prior to fitting CoDaCoRe, we must impute any zeros in our input variable (a standard pre-processing step for ratio-based methods).
 ```{r}
 x <- x + 1
 ```
@@ -42,9 +44,9 @@ xTrain <- x[trainIndex,]
 yTrain <- y[trainIndex]
 ```
 
-Now we are ready to fit CoDaCoRe. Notice the fast runtime (as compared to, for example, `selbal.cv`).
+We are ready to fit CoDaCoRe. We stick to the default parameters for now. Notice the fast runtime (as compared to, for example, `selbal.cv`).
 ```{r}
-model = codacore(
+model <- codacore(
   xTrain,
   yTrain,
   logRatioType = 'balances', # can also use 'amalgamations'
@@ -52,44 +54,126 @@ model = codacore(
 )
 ```
 
+## Visualizing results
+
 Next we can check the learned output of the model: what inputs were included in the learned log-ratios, how strongly associated they are to the response, and how well they classified the data.
 ```{r}
 print(model)
 ```
 
-The most predictive ratio identified by codacore is g__Roseburia / g__Dialister, which can be visualized with the `plot` function.
+The most predictive ratio identified by CoDaCoRe is Roseburia / Dialister, which can be visualized with the `plot` function.
 ```{r}
 plot(model)
 ```
+
+Note that CoDaCoRe is an ensemble model, where multiple log-ratios are learned sequentially in decreasing order of importance (with automatic stopping whenever no additional log-ratio improved the loss function during training). We can visualize the performance of this ensembling procedure by "stacking" the respective ROC curves.
+```{r}
+plotROC(model)
+```
+
+## Predicting on new data
 
 We can also use our trained model to classify new samples.
 ```{r}
 xTest <- x[-trainIndex,]
 yTest <- y[-trainIndex]
-yHat = predict(model, xTest, logits=F)
+yHat <- predict(model, xTest, logits=F)
+cat("Test set AUC =", pROC::auc(pROC::roc(yTest, yHat, quiet=T)))
 # Convert probabilities into a binary class
-failure = yHat < 0.5
-success = yHat >= 0.5
-yHat[failure] = levels(y)[1]
-yHat[success] = levels(y)[2]
+failure <- yHat < 0.5
+success <- yHat >= 0.5
+yHat[failure] <- levels(y)[1]
+yHat[success] <- levels(y)[2]
 cat("Classification accuracy on test set =", round(mean(yHat == yTest), 2))
 ```
 
-## Continuous outcomes
-Coming soon
+Other useful functions include:
+```{r, results=F}
+getNumeratorParts(model, 1)
+getDenominatorParts(model, 1)
+getLogRatios(model, xTest)
+```
 
-## Tuning lambda
-Coming soon
 
 ## Using amalgamations (summed-log-ratios)
-Coming soon
 
-## Partialling out additional covariates
-Coming soon
+CoDaCoRe can be used to learn log-ratios between both geometric means (known as "balances" or "isometric-log-ratio") or summations (known as "amalgamations" or "summed-log-ratio"), depending on the goals of the user. This can be specified with the parameter `logRatioType`.
+```{r}
+model <- codacore(xTrain, yTrain, logRatioType = "amalgamations")
+print(model)
+```
+
+Note that amalgamations/summed-log-ratios are less sensitive to covariates that are small in magnitude (e.g., rare microbes), which can hinder their predictive strength for datasets where small covariates are important. On the other hand, summed-log-ratios have a different interpretation than isometric-log-ratios and may therefore be preferrable in some applications (e.g., when the "summed" effect of an aggregated sub-population is the object of interest). In our Crohn's disease data, the rare species Roseburia gets picked up by the isometric-log-ratio, but not by the summed-log-ratio, which is more sensitive to more common bacteria species such as Faecalibacterium.
+
+## Continuous outcomes
+
+We consider the HIV data from (Noguera-Julian et al. 2016  http://dx.doi.org/10.1016/j.ebiom.2016.01.032), which again we take from the `selbal` package. The goal here is to construct a log-ratio of the microbial abundances that is predictive of the inflammation marker "sCD14", a continuous response variable. CoDaCoRe can be applied much in the same way, except the loss function changes from binary cross-entropy to mean-squared-error. This change will happen automatically based on the values received from `y` (although it can also be overriden manually via the ```objective``` parameter, for example, if the user wanted to fit a binary response using the mean-squared-error, they could specify ```objective = 'regression'```).
+
+```{r}
+data("sCD14")
+x <- sCD14[, -ncol(sCD14)]
+y <- sCD14[, ncol(sCD14)]
+
+# Replace zeros as before
+x <- x + 1
+
+# Split the data
+trainIndex <- sample(1:nrow(x), 0.8 * nrow(x))
+xTrain <- x[trainIndex,]
+yTrain <- y[trainIndex]
+
+# Fit codacore and inspect results
+model <- codacore(xTrain, yTrain)
+print(model)
+plot(model)
+```
+
+## Tuning lambda
+
+The parameter lambda controls the regularization strength of CoDaCoRe. In particular, lambda = 1 (the default value) corresponds to applying the 1-standard-error rule in the discretization step of the log-ratio (details in [Section 3.3](https://www.biorxiv.org/content/10.1101/2021.02.11.430695v1.full.pdf)). This is typically a good choice, leading to models that are very sparse and also performant. Sparser models can be achieved by higher values of lambda, for example, lambda = 2 corresponds to applying a "2-standard-error" rule. On the other hand, smaller values of lambda result in less sparse, but typically more predictive, models. In particular, lambda = 0 corresponds to no standard-error rule, in other words choosing the log-ratio that minimizes cross-validation score. Such a choice can be good when we seek a maximally predictive model, but care less about sparsity.
+```{r}
+model <- codacore(xTrain, yTrain, lambda = 0.0)
+print(model)
+```
+
+Notice the increased R-squared score relative to the previous model (at the expense of sparsity).
+
+## Additional covariates
+
+Many applications require accounting for potential confounder variables as well as our ratio-based biomarkers. As an example, we consider a second HIV dataset from (Noguera-Julian et al. 2016  http://dx.doi.org/10.1016/j.ebiom.2016.01.032), which is also available from the `selbal` package. The goal is to find a microbial signature for HIV status, i.e., a log-ratio that can discriminate between HIV-positive and HIV-negative individuals. However, we have an additional confounder variable, MSM (Men who have Sex with Men). There are multiple approaches that can be used to account for the effect of this covariate in the context of a CoDaCoRe model. One of the simplest approaches would be to start by "partialling out" this variable, by regressing HIV status on MSM, and then training CoDaCoRe on the "residual". Note that this is a natural approach in the context of CoDaCoRe, given the ensembling (i.e. stagewise additive) nature of our model. This is easily done by means of the `offset` parameter.
+```{r}
+data("HIV")
+x <- HIV[, 1:(ncol(HIV) - 2)]
+z <- HIV[, ncol(HIV) - 1]
+y <- HIV[, ncol(HIV)]
+
+# Replace zeros as before
+x <- x + 1
+
+# Split the data
+trainIndex <- sample(1:nrow(x), 0.8 * nrow(x))
+xTrain <- x[trainIndex,]
+zTrain <- z[trainIndex]
+yTrain <- y[trainIndex]
+
+partial <- glm(yTrain ~ zTrain, family='binomial')
+model <- codacore(xTrain, yTrain, offset=partial$fitted.values)
+print(model)
+plot(model)
+partialAUC <- pROC::auc(pROC::roc(yTrain, partial$fitted.values, quiet=T))
+codacoreAUC <- model$ensemble[[1]]$AUC
+cat("AUC gain:", round(100 * (codacoreAUC - partialAUC)), "%")
+```
+
+## Controlling overlap between log-ratios
+
+By default, CoDaCoRe allows for "overlapping log-ratios", in other words, a covariate that is included in the first log-ratio may well be included in a second or third log-ratio provided it is sufficiently predictive. In a future version of the package, we will include a parameter that allows the user to control this behaviour, supporting both "overlapping log-ratios" as well as "mutually exclusive log-ratios", where each log-ratio must be constructed from a different set of covariates.
 
 ## Unsupervised Learning
-Coming soon
 
-## Controlling overlap between logratios
-Coming soon
+Coming soon...
+
+## Multi-omics integration
+
+Coming soon...
 

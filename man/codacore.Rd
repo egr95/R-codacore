@@ -10,6 +10,7 @@ codacore(
   logRatioType = "balances",
   objective = NULL,
   lambda = 1,
+  offset = NULL,
   shrinkage = 1,
   maxBaseLearners = 10,
   optParams = list(),
@@ -19,9 +20,9 @@ codacore(
 )
 }
 \arguments{
-\item{x}{A data.frame of the compositional predictor variables.}
+\item{x}{A data.frame or matrix of the compositional predictor variables.}
 
-\item{y}{A data.frame of the response variables.}
+\item{y}{A data.frame, matrix or vector of the response.}
 
 \item{logRatioType}{A string indicating whether to use "balances" or "amalgamations".
 Also accepts "balance", "B", "ILR", or "amalgam", "A", "SLR".
@@ -35,6 +36,8 @@ it is NULL and gets inferred from the values in y.}
 \item{lambda}{A numeric. Corresponds to the "lambda-SE" rule. Sets the "regularization strength"
 used by the algorithm to decide how to harden the ratio. 
 Larger numbers tend to yield fewer, more sparse ratios.}
+
+\item{offset}{A numeric vector of the same length as y. Works similarly to the offset in a glm.}
 
 \item{shrinkage}{A numeric. Shrinkage factor applied to each base learner.
 Defaults to 1.0, i.e., no shrinkage applied.}
