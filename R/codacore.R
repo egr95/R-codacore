@@ -620,6 +620,11 @@ codacore <- function(
   )
   class(cdcr) = "codacore"
   
+  # If no log-ratios were found, suggest reducing regularization strength
+  if (length(ensemble) == 0) {
+    warning("No predictive log-ratios were found. Consider using lower values of lambda.")
+  }
+  
   return(cdcr)
 }
 
@@ -636,6 +641,15 @@ codacore <- function(
 #'
 #' @export
 predict.codacore = function(object, newx, logits=T, ...) {
+  # Throw an error if zeros are present
+  if (any(x == 0)) {
+    if (logRatioType == 'A') {
+      warning("The data contain zeros. An epsilon is used to prevent divide-by-zero errors.")
+    } else if (logRatioType == 'B') {
+      stop("The data contain zeros. Balances cannot be used in this case.")
+    }
+  }
+  
   x = .prepx(newx)
   yHat = rep(0, nrow(x))
 
@@ -873,6 +887,9 @@ getLogRatios <- function(cdcr, x=NULL){
       stop("Response should be 1-dimensional.")
     }
     y = y[[1]]
+  }
+  if (class(y) == 'character') {
+    y = factor(y)
   }
   return(y)
 }
