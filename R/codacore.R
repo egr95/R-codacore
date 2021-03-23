@@ -293,7 +293,8 @@ findBestCutoff.CoDaBaseLearner = function(cdbl) {
   }
   # Now implement lambda-SE rule
   means = apply(scores, 1, mean)
-  stds = apply(scores, 1, stats::sd)
+  # see eqn 9.2 here https://www.cs.cmu.edu/~psarkar/sds383c_16/lecture9_scribe.pdf
+  stds = apply(scores, 1, stats::sd) / sqrt(numFolds)
   lambdaSeRule = max(means) - stds[which.max(means)] * cdbl$lambda
   # oneSdRule = max(means - stds)
   bestCutoff = candidateCutoffs[means >= lambdaSeRule][1]
@@ -426,7 +427,18 @@ predict.CoDaBaseLearner = function(cdbl, x, logits=T) {
 #'  maxCutoffs (number of candidate cutoff values of 'c' to be tested out
 #'  during CV process).
 #' @param verbose A logical. Toggles whether to display intermediate steps.
-#' @param overlap TODO: To be implemented
+#' @param overlap To be implemented
+#' 
+#' @return A \code{codacore} object.
+#' 
+#' @examples
+#' data("Crohn")
+#' x <- Crohn[, -ncol(Crohn)]
+#' y <- Crohn[, ncol(Crohn)]
+#' x <- x + 1
+#' model = codacore(x, y)
+#' print(model)
+#' plot(model)
 #' 
 #' @importFrom stats predict
 #' 
@@ -507,6 +519,7 @@ codacore <- function(
   }
   
   if (!overlap) {
+    # TODO: implement this
     stop("Disjoint log-ratios not yet implemented.")
   }
   

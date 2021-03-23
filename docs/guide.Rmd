@@ -11,10 +11,14 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-We assume a working installation of `codacore` ([link](https://github.com/egr95/R-codacore/blob/main/README.md)), as well as the `selbal` package ([link](https://github.com/UVic-omics/selbal/blob/master/vignettes/vignette.Rmd)), from which we will borrow the Crohn's disease data (Gevers et al. 2014 http://dx.doi.org/10.1016/j.chom.2014.02.005).
+We assume a working installation of `codacore` ([link](https://github.com/egr95/R-codacore/blob/main/README.md)).
 ```{r}
 library("codacore")
-library("selbal")
+help(codacore)
+```
+
+In this tutorial, we will showcase `codacore` using three datasets that were also analyzed by the authors of `selbal` [(Rivera-Pinto et al., 2018)](https://msystems.asm.org/content/3/4/e00053-18.short). First, we consider the Crohn's disease data from [(Gevers et al., 2014)](http://dx.doi.org/10.1016/j.chom.2014.02.005).
+```{r}
 data("Crohn")
 x <- Crohn[, -ncol(Crohn)]
 y <- Crohn[, ncol(Crohn)]
@@ -107,7 +111,7 @@ Note that amalgamations/summed-log-ratios are less sensitive to covariates that 
 
 ## Continuous outcomes
 
-We consider the HIV data from (Noguera-Julian et al. 2016  http://dx.doi.org/10.1016/j.ebiom.2016.01.032), which again we take from the `selbal` package. The goal here is to construct a log-ratio of the microbial abundances that is predictive of the inflammation marker "sCD14", a continuous response variable. CoDaCoRe can be applied much in the same way, except the loss function changes from binary cross-entropy to mean-squared-error. This change will happen automatically based on the values received from `y` (although it can also be overriden manually via the ```objective``` parameter, for example, if the user wanted to fit a binary response using the mean-squared-error, they could specify ```objective = 'regression'```).
+We consider the HIV data from [(Noguera-Julian et al., 2016)](http://dx.doi.org/10.1016/j.ebiom.2016.01.032). The goal here is to construct a log-ratio of the microbial abundances that is predictive of the inflammation marker "sCD14", a continuous response variable. CoDaCoRe can be applied much in the same way, except the loss function changes from binary cross-entropy to mean-squared-error. This change will happen automatically based on the values inputted as `y` (although it can also be overriden manually via the ```objective``` parameter, for example, if the user wanted to fit a binary response using the mean-squared-error, they could specify ```objective = 'regression'```).
 
 ```{r}
 data("sCD14")
@@ -140,7 +144,7 @@ Notice the increased R-squared score relative to the previous model (at the expe
 
 ## Additional covariates
 
-Many applications require accounting for potential confounder variables as well as our ratio-based biomarkers. As an example, we consider a second HIV dataset from (Noguera-Julian et al. 2016  http://dx.doi.org/10.1016/j.ebiom.2016.01.032), which is also available from the `selbal` package. The goal is to find a microbial signature for HIV status, i.e., a log-ratio that can discriminate between HIV-positive and HIV-negative individuals. However, we have an additional confounder variable, MSM (Men who have Sex with Men). There are multiple approaches that can be used to account for the effect of this covariate in the context of a CoDaCoRe model. One of the simplest approaches would be to start by "partialling out" this variable, by regressing HIV status on MSM, and then training CoDaCoRe on the "residual". Note that this is a natural approach in the context of CoDaCoRe, given the ensembling (i.e. stagewise additive) nature of our model. This is easily done by means of the `offset` parameter.
+Many applications require accounting for potential confounder variables as well as our ratio-based biomarkers. As an example, we consider a second HIV dataset from [(Noguera-Julian et al. 2016)](http://dx.doi.org/10.1016/j.ebiom.2016.01.032). The goal is to find a microbial signature for HIV status, i.e., a log-ratio that can discriminate between HIV-positive and HIV-negative individuals. However, we have an additional confounder variable, MSM (Men who have Sex with Men). There are multiple approaches that can be used to account for the effect of this covariate in the context of a CoDaCoRe model. One of the simplest approaches would be to start by "partialling out" this variable, by regressing HIV status on MSM, and then training CoDaCoRe on the "residual". Note that this is a natural approach in the context of CoDaCoRe, given the ensembling (i.e. stagewise additive) nature of our model. This is easily done by means of the `offset` parameter.
 ```{r}
 data("HIV")
 x <- HIV[, 1:(ncol(HIV) - 2)]

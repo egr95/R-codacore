@@ -2,7 +2,7 @@
 
 A self-contained, up-to-date implementation of [CoDaCoRe](https://www.biorxiv.org/content/10.1101/2021.02.11.430695v1), in the R programming language, by the original authors.
 
-The [CoDaCoRe guide](https://egr95.github.io/R-codacore/crohn.html) contains a detailed tutorial on usage and functionality (note this tutorial assumes a prior installation of the package as per the steps below).
+The [CoDaCoRe guide](https://egr95.github.io/R-codacore/guide.html) contains a detailed tutorial on usage and functionality (note this tutorial assumes a prior installation of the package as per the steps below).
 
 For an equivalent implementation in python, check [py-codacore](https://github.com/egr95/py-codacore). If you are interested in reproducing the results in the [original paper](https://www.biorxiv.org/content/10.1101/2021.02.11.430695v1), check [this repo](https://github.com/cunningham-lab/codacore).
 
