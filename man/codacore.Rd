@@ -61,9 +61,22 @@ during CV process).}
 
 \item{verbose}{A logical. Toggles whether to display intermediate steps.}
 
-\item{overlap}{TODO: To be implemented}
+\item{overlap}{To be implemented}
+}
+\value{
+A \code{codacore} object.
 }
 \description{
 This function implements the codacore algorithm described by Gordon-Rodriguez et al. 2021 
 (https://doi.org/10.1101/2021.02.11.430695).
+}
+\examples{
+data("Crohn")
+x <- Crohn[, -ncol(Crohn)]
+y <- Crohn[, ncol(Crohn)]
+x <- x + 1
+model = codacore(x, y)
+print(model)
+plot(model)
+
 }

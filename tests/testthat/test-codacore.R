@@ -9,7 +9,7 @@ testthat::test_that("simple logratios", {
   model = codacore(x, y, logRatioType='B')
   testthat::expect_true(getNumeratorParts(model, 1)[1])
   testthat::expect_true(getDenominatorParts(model, 1)[2])
-  testthat::expect_equal(model$ensemble[[1]]$accuracy, 0.846)
+  testthat::expect_equal(model$ensemble[[1]]$accuracy, 0.851)
   
   model = codacore(x, y, logRatioType='A')
   testthat::expect_true(getNumeratorParts(model, 1)[1])
@@ -23,12 +23,12 @@ testthat::test_that("simple logratios", {
   model = codacore(x, y, logRatioType='B', objective='regression')
   testthat::expect_true(getNumeratorParts(model, 1)[1])
   testthat::expect_true(getDenominatorParts(model, 1)[2])
-  testthat::expect_equal(model$ensemble[[1]]$Rsquared, 0.460, tolerance=0.001)
+  testthat::expect_equal(model$ensemble[[1]]$Rsquared, 0.349, tolerance=0.001)
   
   model = codacore(x, y, logRatioType='A', objective='regression')
   testthat::expect_true(getNumeratorParts(model, 1)[1])
   testthat::expect_true(getDenominatorParts(model, 1)[2])
-  testthat::expect_equal(model$ensemble[[1]]$Rsquared, 0.460, tolerance=0.001)
+  testthat::expect_equal(model$ensemble[[1]]$Rsquared, 0.349, tolerance=0.001)
   
 })
 
@@ -45,14 +45,14 @@ testthat::test_that("balances", {
   testthat::expect_true(getNumeratorParts(model, 1)[4])
   testthat::expect_true(getNumeratorParts(model, 1)[6])
   testthat::expect_true(getDenominatorParts(model, 1)[5])
-  testthat::expect_equal(model$ensemble[[1]]$accuracy, 0.73)
+  testthat::expect_equal(model$ensemble[[1]]$accuracy, 0.733)
   
   # Now test in regression mode
   HTS = simulateHTS(n, p, logratio='balance', outputType = 'continuous')
   x = HTS$x + 1
   y = HTS$y
   model = codacore(x, y, logRatioType='B', objective='regression')
-  testthat::expect_equal(model$ensemble[[1]]$Rsquared, 0.226, tolerance=0.001)
+  testthat::expect_equal(model$ensemble[[1]]$Rsquared, 0.257, tolerance=0.001)
   
 })
 
@@ -69,7 +69,7 @@ testthat::test_that("amalgamations", {
   testthat::expect_true(getNumeratorParts(model, 1)[1])
   testthat::expect_true(getNumeratorParts(model, 1)[2])
   testthat::expect_true(getDenominatorParts(model, 1)[3])
-  testthat::expect_equal(model$ensemble[[1]]$AUC[1], 0.916, tolerance=0.001)
+  testthat::expect_equal(model$ensemble[[1]]$AUC[1], 0.925, tolerance=0.001)
   
   
   # Now test in regression mode
@@ -80,7 +80,7 @@ testthat::test_that("amalgamations", {
   testthat::expect_true(getNumeratorParts(model, 1)[1])
   testthat::expect_true(getNumeratorParts(model, 1)[2])
   testthat::expect_true(getDenominatorParts(model, 1)[3])
-  testthat::expect_equal(model$ensemble[[1]]$Rsquared, 0.504, tolerance=0.001)
+  testthat::expect_equal(model$ensemble[[1]]$Rsquared, 0.540, tolerance=0.001)
   
 })
 
