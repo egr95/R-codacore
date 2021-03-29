@@ -656,9 +656,9 @@ codacore <- function(
 predict.codacore = function(object, newx, logits=T, ...) {
   # Throw an error if zeros are present
   if (any(x == 0)) {
-    if (logRatioType == 'A') {
+    if (object$logRatioType == 'A') {
       warning("The data contain zeros. An epsilon is used to prevent divide-by-zero errors.")
-    } else if (logRatioType == 'B') {
+    } else if (object$logRatioType == 'B') {
       stop("The data contain zeros. Balances cannot be used in this case.")
     }
   }
