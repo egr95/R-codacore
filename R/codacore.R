@@ -655,7 +655,7 @@ codacore <- function(
 #' @export
 predict.codacore = function(object, newx, logits=T, ...) {
   # Throw an error if zeros are present
-  if (any(x == 0)) {
+  if (any(newx == 0)) {
     if (object$logRatioType == 'A') {
       warning("The data contain zeros. An epsilon is used to prevent divide-by-zero errors.")
     } else if (object$logRatioType == 'B') {
@@ -885,7 +885,7 @@ getLogRatios <- function(cdcr, x=NULL){
 
 
 .prepx = function(x) {
-  if (class(x) == 'data.frame') {x = as.matrix(x)}
+  if (class(x)[1] == 'data.frame') {x = as.matrix(x)}
   if (is.integer(x)) {x = x * 1.0}
   
   # If the data is un-normalized (e.g. raw counts),
@@ -895,11 +895,22 @@ getLogRatios <- function(cdcr, x=NULL){
 }
 
 .prepy = function(y) {
-  if (class(y) == 'data.frame') {
+  if (class(y)[1] == 'data.frame') {
     if (ncol(y) > 1) {
       stop("Response should be 1-dimensional.")
     }
     y = y[[1]]
+  }
+  if (class(y)[1] == 'matrix') {
+    if (ncol(y) > 1) {
+      stop("Response should be 1-dimensional.")
+    }
+    if (class(y[1]) == "character") {
+      y = as.character(y)
+    }
+    if (class(y[1]) == "numeric"){
+      y = as.numeric(y)
+    }
   }
   if (class(y) == 'character') {
     y = factor(y)
