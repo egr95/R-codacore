@@ -24,7 +24,7 @@ help(codacore) # if in doubt, check documentation
 model = codacore(
     x, # compositional input, e.g., HTS count data 
     y, # response variable, typically a 0/1 binary indicator 
-    type = "balances", # can use "amalgamations" instead, or abbreviations "B" and "A"
+    logRatioType = "balances", # can use "amalgamations" instead, or abbreviations "B" and "A"
     lambda = 1 # regularization strength (default corresponds to 1SE rule) 
 )
 print(model)
