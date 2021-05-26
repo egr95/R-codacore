@@ -1,11 +1,15 @@
 ---
 title: "CoDaCoRe Guide"
 author: "Elliott Gordon-Rodriguez"
-date: "3/12/2021"
-output: html_document
+date: "5/25/2021"
+output:
+  html_document:
+    number_sections: yes
+    toc: yes
+    toc_depth: 3
 ---
 
-## Training the model
+# Training the model
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
@@ -58,7 +62,7 @@ model <- codacore(
 )
 ```
 
-## Visualizing results
+# Visualizing results
 
 Next we can check the learned output of the model: what inputs were included in the learned log-ratios, how strongly associated they are to the response, and how well they classified the data.
 ```{r}
@@ -75,7 +79,7 @@ Note that CoDaCoRe is an ensemble model, where multiple log-ratios are learned s
 plotROC(model)
 ```
 
-## Predicting on new data
+# Predicting on new data
 
 We can also use our trained model to classify new samples.
 ```{r}
@@ -99,7 +103,7 @@ getLogRatios(model, xTest)
 ```
 
 
-## Using amalgamations (summed-log-ratios)
+# Using amalgamations (summed-log-ratios)
 
 CoDaCoRe can be used to learn log-ratios between both geometric means (known as "balances" or "isometric-log-ratio") or summations (known as "amalgamations" or "summed-log-ratio"), depending on the goals of the user. This can be specified with the parameter `logRatioType`.
 ```{r}
@@ -109,7 +113,7 @@ print(model)
 
 Note that amalgamations/summed-log-ratios are less sensitive to covariates that are small in magnitude (e.g., rare microbes), which can hinder their predictive strength for datasets where small covariates are important. On the other hand, summed-log-ratios have a different interpretation than isometric-log-ratios and may therefore be preferrable in some applications (e.g., when the "summed" effect of an aggregated sub-population is the object of interest). In our Crohn's disease data, the rare species Roseburia gets picked up by the isometric-log-ratio, but not by the summed-log-ratio, which is more sensitive to more common bacteria species such as Faecalibacterium.
 
-## Continuous outcomes
+# Continuous outcomes
 
 We consider the HIV data from [(Noguera-Julian et al., 2016)](http://dx.doi.org/10.1016/j.ebiom.2016.01.032). The goal here is to construct a log-ratio of the microbial abundances that is predictive of the inflammation marker "sCD14", a continuous response variable. CoDaCoRe can be applied much in the same way, except the loss function changes from binary cross-entropy to mean-squared-error. This change will happen automatically based on the values inputted as `y` (although it can also be overriden manually via the ```objective``` parameter, for example, if the user wanted to fit a binary response using the mean-squared-error, they could specify ```objective = 'regression'```).
 
@@ -132,7 +136,7 @@ print(model)
 plot(model)
 ```
 
-## Tuning lambda
+# Tuning lambda
 
 The parameter lambda controls the regularization strength of CoDaCoRe. In particular, lambda = 1 (the default value) corresponds to applying the 1-standard-error rule in the discretization step of the log-ratio (details in [Section 3.3](https://www.biorxiv.org/content/10.1101/2021.02.11.430695v1.full.pdf)). This is typically a good choice, leading to models that are very sparse and also performant. Sparser models can be achieved by higher values of lambda, for example, lambda = 2 corresponds to applying a "2-standard-error" rule. On the other hand, smaller values of lambda result in less sparse, but typically more predictive, models. In particular, lambda = 0 corresponds to no standard-error rule, in other words choosing the log-ratio that minimizes cross-validation score. Such a choice can be good when we seek a maximally predictive model, but care less about sparsity.
 ```{r}
@@ -142,7 +146,7 @@ print(model)
 
 Notice the increased R-squared score relative to the previous model (at the expense of sparsity).
 
-## Additional covariates
+# Covariate handling
 
 Many applications require accounting for potential confounder variables as well as our ratio-based biomarkers. As an example, we consider a second HIV dataset from [(Noguera-Julian et al. 2016)](http://dx.doi.org/10.1016/j.ebiom.2016.01.032). The goal is to find a microbial signature for HIV status, i.e., a log-ratio that can discriminate between HIV-positive and HIV-negative individuals. However, we have an additional confounder variable, MSM (Men who have Sex with Men). There are multiple approaches that can be used to account for the effect of this covariate in the context of a CoDaCoRe model. One of the simplest approaches would be to start by "partialling out" this variable, by regressing HIV status on MSM, and then training CoDaCoRe on the "residual". Note that this is a natural approach in the context of CoDaCoRe, given the ensembling (i.e. stagewise additive) nature of our model. This is easily done by means of the `offset` parameter.
 ```{r}
@@ -169,15 +173,37 @@ codacoreAUC <- model$ensemble[[1]]$AUC
 cat("AUC gain:", round(100 * (codacoreAUC - partialAUC)), "%")
 ```
 
-## Controlling overlap between log-ratios
+# Unsupervised learning
+
+CoDaCoRe can be used as follows to obtain a fast, scalable, interpretable and sparse log-ratio based unsupervised learning algorithm. The idea is to first compute a dense representation of the data using traditional methods, and then regress the data against this representation using CoDaCoRe to obtain a sparse log-ratio representation in its stead. For example, one could take the first principal component of the CLR-transformed data, and use CoDaCoRe to approximate this real-valued representation with a single sparse log-ratio score [(Quinn et al., 2021)](https://arxiv.org/abs/2104.07266). In the present HIV dataset, we find that the learned log-ratio biomarker provides a useful representation of the data, markedly separating the MSM from the non-MSM individuals.
+```{r}
+clr <- t(apply(x, 1, function(x) log(x) - mean(log(x))))
+pca <- prcomp(clr, scale=T)
+pc1 = clr %*% pca$rotation[, 1]
+
+model <- codacore(x, as.numeric(pc1))
+logRatio1 <- getLogRatios(model, x)[, 1]
+boxplot(logRatio1 ~ z)
+```
+
+We can take things one step further and derive a second unsupervised log-ratio biomarker, by simply fitting CoDaCoRe on the second principal component. Taken together, our two log-ratio biomarkers capture important information in the data:
+```{r}
+pc2 = clr %*% pca$rotation[, 2]
+model <- codacore(x, as.numeric(pc2))
+logRatio2 <- getLogRatios(model, x)[, 1]
+plot(logRatio1, logRatio2, col=z)
+legend('bottomleft', legend=levels(z), pch=1, col=1:2)
+```
+
+
+Note also that the CoDaCoRe framework can be applied to the unsupervised learning problem in several other ways, some of which are under active development.
+
+
+# Multi-omics integration
+
+Using a similar approach, CoDaCoRe can be used for scalable, sparse, and interpretable multi-omics data integration. We refer the interested reader to the supplement of [Quinn et al., 2021](https://arxiv.org/abs/2104.07266).
+
+
+# Controlling overlap between log-ratios
 
 By default, CoDaCoRe allows for "overlapping log-ratios", in other words, a covariate that is included in the first log-ratio may well be included in a second or third log-ratio provided it is sufficiently predictive. In a future version of the package, we will include a parameter that allows the user to control this behaviour, supporting both "overlapping log-ratios" as well as "mutually exclusive log-ratios", where each log-ratio must be constructed from a different set of covariates.
-
-## Unsupervised Learning
-
-Coming soon...
-
-## Multi-omics integration
-
-Coming soon...
-
