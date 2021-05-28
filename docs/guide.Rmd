@@ -150,32 +150,64 @@ Notice the increased R-squared score relative to the previous model (at the expe
 
 On some datasets, CoDaCoRe may have trouble finding _any_ predictive log-ratios. If none are found, this is typically a sign that the signal in the data is weak. In this case, the analyst may choose to reduce the value of `lambda` (for example, to `lambda = 0`), in order to allow our algorithm to search more aggressively for predictive log-ratios. Doing so will often allow the algorithm to identify at least one predictive log-ratio, at the risk of overfitting the training data. Additional care must be taken in validating such log-ratios on held-out data.
 
-# Covariate handling
+# Covariate adjustment
 
-Many applications require accounting for potential confounder variables as well as our ratio-based biomarkers. As an example, we consider a second HIV dataset from [(Noguera-Julian et al. 2016)](http://dx.doi.org/10.1016/j.ebiom.2016.01.032). The goal is to find a microbial signature for HIV status, i.e., a log-ratio that can discriminate between HIV-positive and HIV-negative individuals. However, we have an additional confounder variable, MSM (Men who have Sex with Men). There are multiple approaches that can be used to account for the effect of this covariate in the context of a CoDaCoRe model. One of the simplest approaches would be to start by "partialling out" this variable, by regressing HIV status on MSM, and then training CoDaCoRe on the "residual". Note that this is a natural approach in the context of CoDaCoRe, given the ensembling (i.e. stagewise additive) nature of our model. This is easily done by means of the `offset` parameter.
+Many applications require accounting for potential confounder variables as well as our ratio-based biomarkers. As an example, we consider a second HIV dataset from [(Noguera-Julian et al. 2016)](http://dx.doi.org/10.1016/j.ebiom.2016.01.032). The goal is to find a microbial signature for HIV status, i.e., a log-ratio that can discriminate between HIV-positive and HIV-negative individuals. However, we have an additional confounder variable, MSM (Men who have Sex with Men). In the context of CoDaCoRe, there are multiple approaches that can be used to adjust for covariates.
+
+## Incremental fit
+
+Given the _stagewise-additive_ (i.e., ensemble) nature of CoDaCoRe, whereby each successive log-ratio is fitted on the residual of the previous iteration, a very natural approach is to fit the covariates _a priori_ and then fit CoDaCoRe on the residual. In other words, we would start by regressing HIV status on MSM, "partialling out" this covariate, and then fit CoDaCoRe on the residual from this model. This can be implemented easily by means of the `offset` parameter.
 ```{r}
 data("HIV")
 x <- HIV[, 1:(ncol(HIV) - 2)]
-z <- HIV[, ncol(HIV) - 1]
-y <- HIV[, ncol(HIV)]
+z <- HIV[, 'MSM']
+y <- HIV$HIV_Status
 
 # Replace zeros as before
 x <- x + 1
 
 # Split the data
 trainIndex <- sample(1:nrow(x), 0.8 * nrow(x))
+dfTrain <- HIV[trainIndex,]
 xTrain <- x[trainIndex,]
-zTrain <- z[trainIndex]
 yTrain <- y[trainIndex]
 
-partial <- glm(yTrain ~ zTrain, family='binomial')
-model <- codacore(xTrain, yTrain, offset=partial$fitted.values)
+partial <- glm(HIV_Status ~ MSM, data=dfTrain, family='binomial')
+# Note the offset must be given in logit space
+model <- codacore(xTrain, yTrain, offset=predict(partial))
 print(model)
-plot(model)
-partialAUC <- pROC::auc(pROC::roc(yTrain, partial$fitted.values, quiet=T))
+partialAUC <- pROC::auc(pROC::roc(yTrain, predict(partial), quiet=T))
 codacoreAUC <- model$ensemble[[1]]$AUC
 cat("AUC gain:", round(100 * (codacoreAUC - partialAUC)), "%")
 ```
+
+Note that, when predicting on new data, the contributions of the covariates and the log-ratios should be added up in logit space.
+```{r}
+dfTest <- HIV[-trainIndex,]
+xTest <- x[-trainIndex,]
+yTest <- z[-trainIndex]
+yHatLogit <- predict(partial, newdata = dfTest) + predict(model, xTest, logits=T)
+yHat <- yHatLogit > 0
+testAUC <- pROC::auc(pROC::roc(yTest, yHatLogit, quiet=T))
+cat("Test AUC:", round(100 * testAUC), "%")
+```
+
+
+## Joint fit
+
+Depending on the application and the goals of the analyst, it may be of interest to understand the _joint_ effect of the covariates and log-ratios on the response. To do so, one option is to simply regress the outcome jointly against the covariates and the learned log-ratios from the previous step. This can be implemented by running, in addition to the above, an additional `glm` fit.
+```{r}
+# Create a new design matrix with response & covariates, as well as log-ratios obtained from codacore
+dfJoint = cbind(dfTrain[, c('MSM', 'HIV_Status')], getLogRatios(model))
+
+# And fit everything jointly
+modelJoint <- glm(HIV_Status ~ ., data=dfJoint, family='binomial')
+# Can again use this model to make predictions or to interpret regression coefficients
+yHat <- predict(modelJoint, newData=dfJoint)
+summary(modelJoint)
+```
+
+Note that, in any case, the CoDaCoRe algorithm itself only optimizes over one log-ratio at a time (in its current implementation). In some applications, it may in fact be beneficial to optimize over the set of log-ratios jointly with the regression coefficients of the covariates. However, this is not yet implemented.
 
 # Unsupervised learning
 
