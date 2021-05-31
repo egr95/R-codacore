@@ -237,7 +237,41 @@ Note also that the CoDaCoRe framework can be applied to the unsupervised learnin
 
 # Multi-omics integration
 
-Using a similar approach, CoDaCoRe can be used for scalable, sparse, and interpretable multi-omics data integration. We refer the interested reader to the supplement of [Quinn et al., 2021](https://arxiv.org/abs/2104.07266).
+With a similar approach, CoDaCoRe can be used for scalable, sparse, and interpretable multi-omics data integration. We briefly highlight an example multi-omics analysis of paired gut microbiome and metabolomics data, taken from 220 clinical samples of which 88 have Chron's disease and 76 have ulcerative colitis [(Franzosa et al., 2019)](https://www.nature.com/articles/s41564-018-0306-4). For a full analysis, see Section 5 and the appendix in [Quinn et al., 2021](https://arxiv.org/abs/2104.07266). Again, we will use standard techniques to compute a (dense) latent representation of the data, which we will then approximate using sparse log-ratio biomarkers. Letting $\mathbf T$ denote the microbe abundances $\mathbf U$ the metabolite abundances, we will use partial least squares (PLS) regression to model the association between $\mathbf T$ and $\mathbf U$. This will result in two latent factors, one for $\mathbf T$ and one for $\mathbf U$, that capture the _joint_ information in the data. These latent factors will constitute the regression target for CoDaCoRe.
+```{r}
+# Load data
+download.file("https://github.com/egr95/FranzosaData/blob/main/FranzosaMicrobiome.rda?raw=true", "FranzosaMicrobiome")
+download.file("https://github.com/egr95/FranzosaData/blob/main/FranzosaMetabolite.rda?raw=true", "FranzosaMetabolite")
+load("FranzosaMicrobiome")
+load("FranzosaMetabolite")
+
+# Note data have already been pre-processed as per (Quinn et al., 2021),
+# including zero-replacement and normalization to a unit total.
+T <- FranzosaMicrobiome[, -ncol(FranzosaMicrobiome)] # We remove the last column (response variable)
+U <- FranzosaMetabolite[, -ncol(FranzosaMetabolite)]
+
+# Apply clr transform prior to PLS
+clrT <- t(apply(T, 1, function(x) log(x) - mean(log(x))))
+clrU <- t(apply(U, 1, function(x) log(x) - mean(log(x))))
+
+# Call mixOmics package and plot first PLS components
+suppressMessages(library('mixOmics'))
+pls <- mixOmics::pls(X = clrT, Y = clrU, ncomp = 1)
+plot(pls$variates$X[,1], pls$variates$Y[,1], main = 'PLS multi-omics (dense)')
+
+# Approximate the dense PLS representations with sparse log-ratio biomarkers
+plsX <- pls$variates$X[,1]
+modelX <- codacore(T, plsX)
+logRatioX <- getLogRatios(modelX)[,1]
+
+plsY <- pls$variates$Y[,1]
+modelY <- codacore(U, plsY, logRatioType = "B")
+logRatioY <- getLogRatios(modelY)[,1]
+
+plot(logRatioX, logRatioY, main = 'CoDaCoRe multi-omics (sparse)')
+```
+
+Note that CoDaCoRe obtains a sparse representation that also has better statistical properties than the original (dense) PLS components, markedly de-skewing the data.
 
 
 # Controlling overlap between log-ratios
