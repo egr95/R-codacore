@@ -269,12 +269,14 @@ findBestCutoff.CoDaBaseLearner = function(cdbl) {
   numFolds = cdbl$cvParams$numFolds
   # Naive way of splitting equally into folds:
   foldIdx = sample(cut(1:length(cdbl$y), breaks=numFolds, labels=F))
-  # Instead we randomize with equal # of case/controls in each fold
-  # See discussion on stratified CV in page 204 of He & Ma 2013
-  caseIdx = sample(cut(1:sum(cdbl$y), breaks=numFolds, labels=F))
-  controlIdx = sample(cut(1:sum(1 - cdbl$y), breaks=numFolds, labels=F))
-  foldIdx[cdbl$y == 1] = caseIdx
-  foldIdx[cdbl$y == 0] = controlIdx
+  if (cdbl$objective == "binary classification") {
+    # Instead we randomize with equal # of case/controls in each fold
+    # See discussion on stratified CV in page 204 of He & Ma 2013
+    caseIdx = sample(cut(1:sum(cdbl$y), breaks=numFolds, labels=F))
+    controlIdx = sample(cut(1:sum(1 - cdbl$y), breaks=numFolds, labels=F))
+    foldIdx[cdbl$y == 1] = caseIdx
+    foldIdx[cdbl$y == 0] = controlIdx
+  } 
   scores = matrix(nrow=length(candidateCutoffs), ncol=numFolds)
   i = 0
   for (cutoff in candidateCutoffs) {
