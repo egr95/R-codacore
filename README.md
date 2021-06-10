@@ -6,7 +6,7 @@ The [CoDaCoRe guide](https://egr95.github.io/R-codacore/guide.html) contains a d
 
 For an equivalent implementation in python, check [py-codacore](https://github.com/egr95/py-codacore). If you are interested in reproducing the results in the [original paper](https://www.biorxiv.org/content/10.1101/2021.02.11.430695v2), check [this repo](https://github.com/cunningham-lab/codacore).
 
-Note this repository is under active development. If you would like to use CoDaCoRe on your dataset, and have any questions regarding the installation, usage, implementation, or model itself, do not hesitate to contact <eg2912@columbia.edu>.
+Note this repository is under active development. If you would like to use CoDaCoRe on your dataset, and have any questions regarding the installation, usage, implementation, or model itself, do not hesitate to contact <eg2912@columbia.edu>. Some previously asked questions are available on the [Issues page](https://github.com/egr95/R-codacore/issues).
 Contributions, fixes, and feature requests are also welcome - please create an issue, submit a pull request, or email me.
 
 ## How to install and run CoDaCoRe
