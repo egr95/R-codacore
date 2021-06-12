@@ -77,4 +77,4 @@ conda install -c conda-forge r-devtools
 
 ## Additional functionality
 
-Some of the additional functionality of our package, including unsupervised learning and multi-omics, is discussed in the [tutorial](https://egr95.github.io/R-codacore/crohn.html). For feature requests, or to get access to an early version, get [in touch](mailto:eg2912@columbia.edu).
+Some of the additional functionality of our package, including unsupervised learning and multi-omics, is discussed in the [tutorial](https://egr95.github.io/R-codacore/guide.html). For feature requests, or to get access to an early version, get [in touch](mailto:eg2912@columbia.edu).
