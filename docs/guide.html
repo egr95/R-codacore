@@ -393,7 +393,7 @@ y &lt;- Crohn[, ncol(Crohn)]</code></pre>
 ## 662 313</code></pre>
 <p>Prior to fitting CoDaCoRe, we must impute any zeros in our input variable (a standard pre-processing step for ratio-based methods).</p>
 <pre class="r"><code>x &lt;- x + 1</code></pre>
-<p>Next, we split our data into a training and a test set (to keep things simple we do this naively at random, though in practice stratified sampling is preferable).</p>
+<p>Next, we split our data into a training and a test set (to keep things simple we do this naively at random, though in practice one might consider stratified sampling and class rebalancing).</p>
 <pre class="r"><code># For reproducibility, we set a random seed (including in TensorFlow, used by codacore)
 set.seed(0); library(tensorflow); tf$random$set_seed(0)
 trainIndex &lt;- sample(1:nrow(x), 0.8 * nrow(x))

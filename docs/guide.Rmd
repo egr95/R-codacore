@@ -43,7 +43,7 @@ Prior to fitting CoDaCoRe, we must impute any zeros in our input variable (a sta
 x <- x + 1
 ```
 
-Next, we split our data into a training and a test set (to keep things simple we do this naively at random, though in practice stratified sampling is preferable).
+Next, we split our data into a training and a test set (to keep things simple we do this naively at random, though in practice one might consider stratified sampling and class rebalancing).
 ```{r}
 # For reproducibility, we set a random seed (including in TensorFlow, used by codacore)
 set.seed(0); library(tensorflow); tf$random$set_seed(0)
