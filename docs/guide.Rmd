@@ -102,6 +102,14 @@ getDenominatorParts(model, 1)
 getLogRatios(model, xTest)
 ```
 
+# Controlling overlap between log-ratios
+
+By default, CoDaCoRe allows for "overlapping log-ratios", in other words, an input variable that is included in the first log-ratio may well be included in a second or third log-ratio provided it is sufficiently predictive. However, the user may choose to restrict each successive log-ratio to be constructed from a mutually exclusive set of input variables (e.g., to obtain _orthogonal balances_, in the Aitchison sense). This can be specified with the parameter `overlap`. In our example, note how `g__Dialister` is no longer repeated.
+
+```{r}
+model <- codacore(xTrain, yTrain, overlap=F)
+print(model)
+```
 
 # Using amalgamations (summed-log-ratios)
 
@@ -273,7 +281,3 @@ plot(logRatioX, logRatioY, main = 'CoDaCoRe multi-omics (sparse)')
 
 Note that CoDaCoRe obtains a sparse representation that also has better statistical properties than the original (dense) PLS components, markedly de-skewing the data.
 
-
-# Controlling overlap between log-ratios
-
-By default, CoDaCoRe allows for "overlapping log-ratios", in other words, a covariate that is included in the first log-ratio may well be included in a second or third log-ratio provided it is sufficiently predictive. In a future version of the package, we will include a parameter that allows the user to control this behaviour, supporting both "overlapping log-ratios" as well as "mutually exclusive log-ratios", where each log-ratio must be constructed from a different set of covariates.

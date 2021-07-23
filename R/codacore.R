@@ -428,8 +428,13 @@ predict.CoDaBaseLearner = function(cdbl, x, logits=T) {
 #'  using cross-validation. Includes numFolds (number of folds) and
 #'  maxCutoffs (number of candidate cutoff values of 'c' to be tested out
 #'  during CV process).
-#' @param verbose A logical. Toggles whether to display intermediate steps.
-#' @param overlap To be implemented
+#' @param verbose A boolean. Toggles whether to display intermediate steps.
+#' @param overlap A boolean. Toggles whether successive log-ratios found by 
+#'  CoDaCoRe may contain repeated input variables. TRUE by default.
+#'  Changing to FALSE implies that the log-ratios obtained by CoDaCoRe
+#'  will become orthogonal in the Aitchison sense, analogously to the
+#'  isometric-log-ratio transformation, while losing a small amount of
+#'  model flexibility.
 #' 
 #' @return A \code{codacore} object.
 #' 
@@ -457,7 +462,7 @@ codacore <- function(
   optParams=list(),
   cvParams=list(),
   verbose=F,
-  overlap=T #TODO: implement this or remove
+  overlap=T
 ){
   
   # Convert x and y to the appropriate objects
@@ -521,8 +526,10 @@ codacore <- function(
   }
   
   if (!overlap) {
-    # TODO: implement this
-    stop("Disjoint log-ratios not yet implemented.")
+    # We store away the original data, since we will override during
+    # the stagewise-additive procedure, zeroing out the input variables
+    # that get picked up by each log-ratio.
+    xOriginal = x
   }
   
   if (nrow(x) > 10000) {
@@ -616,6 +623,18 @@ codacore <- function(
     # numerical overflow which throws an error rather than finding an empty base learner
     if (cdbl$objective == 'binary classification' && cdbl$AUC > 0.999) {break}
     if (cdbl$objective == 'regression' && cdbl$Rsquared > 0.999) {break}
+    
+    # To avoid overlapping log-ratios, we "zero-out" the input variables that have 
+    # already been used
+    if (!overlap) {
+      x[, cdbl$hard$numerator] = 1 / ncol(x)
+      x[, cdbl$hard$denominator] = 1 / ncol(x)
+    }
+  }
+  
+  if (!overlap) {
+    # Replace the original data frame for saving in the object
+    x = xOriginal
   }
   
   cdcr = list(
@@ -629,6 +648,7 @@ codacore <- function(
     maxBaseLearners=maxBaseLearners,
     optParams=optParams,
     cvParams=cvParams,
+    overlap=overlap,
     yLevels=yLevels,
     yMean=yMean,
     yScale=yScale

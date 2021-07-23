@@ -59,9 +59,14 @@ using cross-validation. Includes numFolds (number of folds) and
 maxCutoffs (number of candidate cutoff values of 'c' to be tested out
 during CV process).}
 
-\item{verbose}{A logical. Toggles whether to display intermediate steps.}
+\item{verbose}{A boolean. Toggles whether to display intermediate steps.}
 
-\item{overlap}{To be implemented}
+\item{overlap}{A boolean. Toggles whether successive log-ratios found by 
+CoDaCoRe may contain repeated input variables. TRUE by default.
+Changing to FALSE implies that the log-ratios obtained by CoDaCoRe
+will become orthogonal in the Aitchison sense, analogously to the
+isometric-log-ratio transformation, while losing a small amount of
+model flexibility.}
 }
 \value{
 A \code{codacore} object.
