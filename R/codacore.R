@@ -348,6 +348,10 @@ setInterceptAndSlope.CoDaBaseLearner = function(cdbl, x, y, boostingOffset) {
   dat = data.frame(x=logRatio, y=y)
   if (cdbl$objective == "binary classification") {
     glm = stats::glm(y~x, family='binomial', data=dat, offset=boostingOffset)
+    if (any(is.na(glm$coefficients))) {
+      glm = list(coefficients=list(0, 0))
+      warning("Numerical error during glm fit. Possible data issue.") 
+    }
   } else if (cdbl$objective == "regression") {
     glm = stats::glm(y~x, family='gaussian', data=dat, offset=boostingOffset)
   } else {
@@ -627,8 +631,8 @@ codacore <- function(
     # To avoid overlapping log-ratios, we "zero-out" the input variables that have 
     # already been used
     if (!overlap) {
-      x[, cdbl$hard$numerator] = 1 / ncol(x)
-      x[, cdbl$hard$denominator] = 1 / ncol(x)
+      x[, cdbl$hard$numerator] = min(x)
+      x[, cdbl$hard$denominator] = min(x)
     }
   }
   
