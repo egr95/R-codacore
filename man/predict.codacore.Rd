@@ -4,7 +4,7 @@
 \alias{predict.codacore}
 \title{predict}
 \usage{
-\method{predict}{codacore}(object, newx, logits = T, ...)
+\method{predict}{codacore}(object, newx, logits = T, numLogRatios = NA, ...)
 }
 \arguments{
 \item{object}{A codacore object.}
@@ -15,6 +15,12 @@
 (as opposed to probability space). Should always be set
 to TRUE for regression with continuous outputs, but can
 be toggled for classification problems.}
+
+\item{numLogRatios}{How many predictive log-ratios to 
+include in the prediction. By default, includes the
+effects of all log-ratios that were obtained during
+training. Setting this parameter to an integer k will
+restrict to using only the top k log-ratios in the model.}
 
 \item{...}{Not used.}
 }

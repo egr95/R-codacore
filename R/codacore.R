@@ -307,8 +307,9 @@ findBestCutoff.CoDaBaseLearner = function(cdbl) {
   if (cdbl$verbose) {
     print('CV time:')
     print(endTime - startTime)
-    graphics::plot(2:maxCutoffs, means, ylim=range(c(means-stds, means+stds)))
-    graphics::arrows(2:maxCutoffs, means-stds, 2:maxCutoffs, means+stds, length=0.05, angle=90, code=3)
+    xCoor = 2:(length(means) + 1)
+    graphics::plot(xCoor, means, ylim=range(c(means-stds, means+stds)))
+    graphics::arrows(xCoor, means-stds, xCoor, means+stds, length=0.05, angle=90, code=3)
     graphics::abline(lambdaSeRule, 0)
   }
   
@@ -466,7 +467,8 @@ codacore <- function(
   optParams=list(),
   cvParams=list(),
   verbose=F,
-  overlap=T
+  overlap=T,
+  fast=T
 ){
   
   # Convert x and y to the appropriate objects
@@ -560,6 +562,12 @@ codacore <- function(
     }
   }
   optParams = optDefaults
+  
+  # Check whether we are running in fast or slow mode
+  if (!fast) {
+    message("CoDaCoRe is running in slow mode. Switch to fast=TRUE for ~x5 speedup.")
+    optParams$epochs = 1000
+  }
   
   # Set up cross-validation parameters
   cvDefaults = list(
@@ -676,10 +684,15 @@ codacore <- function(
 #'  (as opposed to probability space). Should always be set
 #'  to TRUE for regression with continuous outputs, but can
 #'  be toggled for classification problems.
+#' @param numLogRatios How many predictive log-ratios to 
+#'  include in the prediction. By default, includes the
+#'  effects of all log-ratios that were obtained during
+#'  training. Setting this parameter to an integer k will
+#'  restrict to using only the top k log-ratios in the model.
 #' @param ... Not used.
 #'
 #' @export
-predict.codacore = function(object, newx, logits=T, ...) {
+predict.codacore = function(object, newx, logits=T, numLogRatios=NA, ...) {
   # Throw an error if zeros are present
   if (any(newx == 0)) {
     if (object$logRatioType == 'A') {
@@ -692,7 +705,12 @@ predict.codacore = function(object, newx, logits=T, ...) {
   x = .prepx(newx)
   yHat = rep(0, nrow(x))
 
-  for (cdbl in object$ensemble) {
+  if (is.na(numLogRatios)) {
+    numLogRatios = length(object$ensemble)
+  }
+  
+  for (i in 1:numLogRatios) {
+    cdbl = object$ensemble[[i]]
     yHat = yHat + object$shrinkage * predict(cdbl, x)
   }
   
@@ -908,6 +926,24 @@ getLogRatios <- function(cdcr, x=NULL){
   return(out)
 }
 
+
+#' getSlopes
+#'
+#' @param cdcr A codacore object
+#'
+#' @return The slopes (i.e., regression coefficients) for each log-ratio.
+#' 
+#' @export
+getSlopes <- function(cdcr){
+  
+  out = c()
+  
+  for (cdbl in cdcr$ensemble) {
+    out = c(out, cdbl$slope)
+  }
+  
+  return(out)
+}
 
 
 .prepx = function(x) {

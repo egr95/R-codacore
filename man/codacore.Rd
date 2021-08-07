@@ -16,7 +16,8 @@ codacore(
   optParams = list(),
   cvParams = list(),
   verbose = F,
-  overlap = T
+  overlap = T,
+  fast = T
 )
 }
 \arguments{
@@ -67,6 +68,10 @@ Changing to FALSE implies that the log-ratios obtained by CoDaCoRe
 will become orthogonal in the Aitchison sense, analogously to the
 isometric-log-ratio transformation, while losing a small amount of
 model flexibility.}
+
+\item{fast}{A boolean. Whether to run in fast or slow mode. TRUE by
+default. Running in slow mode will take ~x5 the computation time,
+but may help identify slightly more accurate log-ratios.}
 }
 \value{
 A \code{codacore} object.

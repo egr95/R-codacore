@@ -95,11 +95,19 @@ yHat[success] <- levels(y)[2]
 cat("Classification accuracy on test set =", round(mean(yHat == yTest), 2))
 ```
 
+Note our `predict` function can be restricted to only use the top _k_ log-ratios in the model for prediction.
+For example, the following will compute the AUC of a 1-log-ratio model, using only the top log-ratio.
+```{r}
+yHat <- predict(model, xTest, logits=F, numLogRatios=1)
+cat("Test set AUC =", pROC::auc(pROC::roc(yTest, yHat, quiet=T)))
+```
+
 Other useful functions include:
 ```{r, results=F}
 getNumeratorParts(model, 1)
 getDenominatorParts(model, 1)
 getLogRatios(model, xTest)
+getSlopes(model)
 ```
 
 # Controlling overlap between log-ratios

@@ -1,3 +1,12 @@
+## codacore 0.0.1
+---------------------
+* Updated tests.
+* Updated guide.
+    * Covariate adjustment
+    * Unsupervised learning
+    * Multi-omics
+* Minor bugfix with glm numerics.
+* Added numLogRatios param to predict().
 
 ## codacore 0.0.1
 ---------------------
