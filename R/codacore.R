@@ -769,19 +769,26 @@ print.codacore = function(x, ...) {
 #' from whose package these plots were inspired.
 #'
 #' @param x A codacore object.
+#' @param index The index of the log-ratio to plot.
 #' @param ... Not used.
 #'
 #' @export
-plot.codacore = function(x, ...) {
+plot.codacore = function(x, index = 1, ...) {
+
+  allRatios = getLogRatios(x)
+  if(index > ncol(allRatios)){
+    stop("The selected log-ratio does not exist!")
+  }
+
   if (x$objective == 'regression') {
 
-    logRatio = getLogRatios(x)[, 1]
+    logRatio = allRatios[, index]
     graphics::plot(logRatio, x$y, xlab='Log-ratio score', ylab='Response')
     graphics::abline(x$ensemble[[1]]$intercept, x$ensemble[[1]]$slope, lwd=2)
     
   } else if (x$objective == 'binary classification') {
 
-    logRatio = getLogRatios(x)[, 1]
+    logRatio = allRatios[, index]
     
     # Convert 0/1 binary output to the original labels, if any
     if (!is.null(x$yLevels)) {
@@ -791,7 +798,7 @@ plot.codacore = function(x, ...) {
     graphics::boxplot(
       logRatio ~ y,
       col=c('orange','lightblue'),
-      main='Distribution of 1st log-ratio',
+      main=paste0('Distribution of log-ratio ', index),
       xlab='Log-ratio score',
       ylab='Outcome',
       horizontal=TRUE
