@@ -754,7 +754,7 @@ print.codacore = function(x, ...) {
         cat("\nSlope:", cdbl$slope)
       } else if (cdbl$objective == 'regression') {
         cat("\nR squared:", cdbl$Rsquared)
-        cat("\nSlope:", cdbl$slope * cdbl$yScale)
+        cat("\nSlope:", cdbl$slope * x$yScale)
       }
     }
   }
