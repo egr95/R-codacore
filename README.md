@@ -21,6 +21,9 @@ devtools::install_github("egr95/R-codacore", ref="main")
 ```r
 library("codacore")
 help(codacore) # if in doubt, check documentation
+data("Crohn") # load some data and apply codacore
+x <- Crohn[, -ncol(Crohn)] + 1
+y <- Crohn[, ncol(Crohn)]
 model = codacore(
     x, # compositional input, e.g., HTS count data 
     y, # response variable, typically a 0/1 binary indicator 
