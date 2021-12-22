@@ -449,6 +449,7 @@ predict.CoDaBaseLearner = function(cdbl, x, logits=T) {
 #' @return A \code{codacore} object.
 #' 
 #' @examples
+#' \dontrun{
 #' data("Crohn")
 #' x <- Crohn[, -ncol(Crohn)]
 #' y <- Crohn[, ncol(Crohn)]
@@ -456,6 +457,7 @@ predict.CoDaBaseLearner = function(cdbl, x, logits=T) {
 #' model = codacore(x, y)
 #' print(model)
 #' plot(model)
+#' }
 #' 
 #' @importFrom stats predict
 #' 
