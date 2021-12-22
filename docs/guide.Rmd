@@ -287,5 +287,10 @@ logRatioY <- getLogRatios(modelY)[,1]
 plot(logRatioX, logRatioY, main = 'CoDaCoRe multi-omics (sparse)')
 ```
 
+```{r, include=FALSE}
+file.remove("FranzosaMicrobiome")
+file.remove("FranzosaMetabolite")
+```
+
 Note that CoDaCoRe obtains a sparse representation that also has better statistical properties than the original (dense) PLS components, markedly de-skewing the data.
 
