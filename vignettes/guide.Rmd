@@ -1,0 +1,20 @@
+---
+title: "my-vignette"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{my-vignette}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r, echo = FALSE, results = "asis"}
+vignette_dir <- "../inst/misc/"
+vignette_file <- "guide.md"
+lines <- readLines(paste0(vignette_dir, vignette_file))
+lines <- gsub("![](", replacement = paste0("![](", vignette_dir), x = lines, fixed = TRUE)
+cat(lines, sep = "\n")
+```
