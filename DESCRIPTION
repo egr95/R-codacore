@@ -1,11 +1,10 @@
 Package: codacore
 Title: Learning Sparse Log-Ratios for Compositional Data
-Version: 0.0.2
-Authors@R: 
-    person(given = "Elliott",
-           family = "Gordon-Rodriguez",
-           role = c("aut", "cre"),
-           email = "elliott.gordon.rodriguez@gmail.com")
+Version: 0.0.3
+Authors@R: c(
+    person("Elliott", "Gordon-Rodriguez", email = "eg2912@columbia.edu", role = c("aut", "cre")),
+    person("Thomas", "Quinn", email = "contacttomquinn@gmail.com", role = c("aut"))
+    )
 Description: In the context of high-throughput genetic data,
     CoDaCoRe identifies a set of sparse biomarkers that are
     predictive of a response variable of interest. More generally,

@@ -1,0 +1,15 @@
+citHeader("To cite codacore in publications use:")
+
+citEntry(entry = "Article",
+         title        = paste("Learning Sparse Log-Ratios For High-Throughput Sequencing Data"),
+         author       = personList(as.person("Elliott Gordon-Rodriguez"),
+                                   as.person("Thomas P. Quinn"),
+                                   as.person("John P. Cunningham")),
+         journal      = "Bioinformatics",
+         year         = "2021",
+
+         textVersion  =
+           paste("Elliott Gordon-Rodriguez, Thomas P Quinn, John P Cunningham,",
+                 "Learning sparse log-ratios for high-throughput sequencing data,",
+                 "Bioinformatics, 2021;, btab645, doi:10.1093/bioinformatics/btab645")
+)

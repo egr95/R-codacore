@@ -79,3 +79,9 @@ conda install -c conda-forge r-devtools
 ## Additional functionality
 
 Some of the additional functionality of our package, including unsupervised learning and multi-omics, is discussed in the [Guide](https://egr95.github.io/R-codacore/inst/misc/guide.html). For feature requests, or to get access to an early version, get [in touch](mailto:eg2912@columbia.edu).
+
+
+## Acknowledgements
+Thanks for your contributions to R-codacore!
+
+- Marcus Fedarko
