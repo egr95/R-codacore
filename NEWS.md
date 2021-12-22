@@ -1,4 +1,9 @@
-## codacore 0.0.1
+## codacore 0.0.3
+---------------------
+* Submitted to CRAN.
+* Updated readme and vignettes to reflect this.
+
+## codacore 0.0.2
 ---------------------
 * Updated tests.
 * Updated guide.
