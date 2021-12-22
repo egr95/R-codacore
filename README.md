@@ -2,7 +2,7 @@
 
 A self-contained, up-to-date implementation of [CoDaCoRe](https://doi.org/10.1093/bioinformatics/btab645), in the R programming language, by the original authors.
 
-The [CoDaCoRe guide](https://egr95.github.io/R-codacore/guide.html) contains a detailed tutorial on usage and functionality (note this tutorial assumes a prior installation of the package as per the steps below).
+The [CoDaCoRe guide](https://egr95.github.io/R-codacore/inst/misc/guide.html) contains a detailed tutorial on usage and functionality (note this tutorial assumes a prior installation of the package as per the steps below).
 
 Note this repository is under active development. If you would like to use CoDaCoRe on your dataset, and have any questions regarding the installation, usage, implementation, or model itself, do not hesitate to contact <eg2912@columbia.edu>. Some previously asked questions are available on the [Issues page](https://github.com/egr95/R-codacore/issues).
 Contributions, fixes, and feature requests are also welcome - please create an issue, submit a pull request, or email me.
@@ -78,4 +78,4 @@ conda install -c conda-forge r-devtools
 
 ## Additional functionality
 
-Some of the additional functionality of our package, including unsupervised learning and multi-omics, is discussed in the [tutorial](https://egr95.github.io/R-codacore/guide.html). For feature requests, or to get access to an early version, get [in touch](mailto:eg2912@columbia.edu).
+Some of the additional functionality of our package, including unsupervised learning and multi-omics, is discussed in the [Guide](https://egr95.github.io/R-codacore/inst/misc/guide.html). For feature requests, or to get access to an early version, get [in touch](mailto:eg2912@columbia.edu).
