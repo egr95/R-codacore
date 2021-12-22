@@ -16,7 +16,7 @@
 #' }
 #' @docType data
 #' @name HIV
-#' @references \url{https://www.ncbi.nlm.nih.gov/pubmed/27077120}
+#' @references \url{https://pubmed.ncbi.nlm.nih.gov/27077120/}
 #' @keywords data
 NULL
 
@@ -36,7 +36,7 @@ NULL
 #' }
 #' @name sCD14
 #' @docType data
-#' @references \url{http://dx.doi.org/10.1016/j.ebiom.2016.01.032}
+#' @references \doi{10.1016/j.ebiom.2016.01.032}
 #' @keywords data
 NULL
 
@@ -58,6 +58,6 @@ NULL
 #' }
 #' @name Crohn
 #' @docType data
-#' @references \url{https://qiita.ucsd.edu/study/description/1939}
+#' @references \url{https://qiita.ucsd.edu/}
 #' @keywords data
 NULL

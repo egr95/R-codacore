@@ -22,6 +22,6 @@ of 155 samples (including HIV - infected and non - infected patients).
 The \code{data.frame} is composed by 60 genera and two variables.
 }
 \references{
-\url{https://www.ncbi.nlm.nih.gov/pubmed/27077120}
+\url{https://pubmed.ncbi.nlm.nih.gov/27077120/}
 }
 \keyword{data}

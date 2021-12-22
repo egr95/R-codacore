@@ -20,6 +20,6 @@ of 975 samples (including 662 samples of patients with Crohn`s disease and
 The \code{data.frame} is composed by 48 genera and a factor variable
 }
 \references{
-\url{https://qiita.ucsd.edu/study/description/1939}
+\url{https://qiita.ucsd.edu/}
 }
 \keyword{data}

@@ -19,6 +19,6 @@ of 151 samples (including HIV - infected and non - infected patients).
 The \code{data.frame} is composed by 60 genera and a numeric variable
 }
 \references{
-\url{http://dx.doi.org/10.1016/j.ebiom.2016.01.032}
+\doi{10.1016/j.ebiom.2016.01.032}
 }
 \keyword{data}
