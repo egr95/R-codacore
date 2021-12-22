@@ -2,6 +2,7 @@
 # Here we implement the codacore model
 
 library(keras)
+utils::globalVariables(c("self"))
 
 # """Fits a single base learner"""
 # Private class not to be called by user
@@ -119,6 +120,10 @@ trainRelaxation.CoDaBaseLearner = function(cdbl) {
       # keras::k_sigmoid(eta)
       eta
     }
+  }
+  
+  if (FALSE) {
+    tensorflow::tf$random$set_seed(0)
   }
   
   # Set up custom layer
