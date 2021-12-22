@@ -470,7 +470,7 @@ codacore <- function(
   lambda=1.0,
   offset=NULL,
   shrinkage=1.0,
-  maxBaseLearners=10,
+  maxBaseLearners=5,
   optParams=list(),
   cvParams=list(),
   verbose=F,

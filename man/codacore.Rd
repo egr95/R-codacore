@@ -12,7 +12,7 @@ codacore(
   lambda = 1,
   offset = NULL,
   shrinkage = 1,
-  maxBaseLearners = 10,
+  maxBaseLearners = 5,
   optParams = list(),
   cvParams = list(),
   verbose = F,

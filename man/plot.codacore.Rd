@@ -4,10 +4,12 @@
 \alias{plot.codacore}
 \title{plot}
 \usage{
-\method{plot}{codacore}(x, ...)
+\method{plot}{codacore}(x, index = 1, ...)
 }
 \arguments{
 \item{x}{A codacore object.}
+
+\item{index}{The index of the log-ratio to plot.}
 
 \item{...}{Not used.}
 }
