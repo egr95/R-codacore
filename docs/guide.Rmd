@@ -1,19 +1,33 @@
 ---
 title: "CoDaCoRe Guide"
-author: "Elliott Gordon-Rodriguez"
-date: "5/25/2021"
-output:
-  html_document:
+author: 
+  - Elliott Gordon Rodriguez^[eg2912@columbia.edu]
+date: "`r Sys.Date()`"
+output: 
+  md_document:
     number_sections: yes
-    toc: yes
+    toc: true
     toc_depth: 3
+  rmarkdown::html_vignette:
+    number_sections: yes
+    toc: true
+    toc_depth: 3
+vignette: >
+  %\VignetteIndexEntry{CoDaCoRe Guide}
+  %\VignetteEncoding{UTF-8}
+  %\VignetteEngine{knitr::rmarkdown}
 ---
 
-# Training the model
-
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.width = 7,
+  fig.height = 5
+)
 ```
+
+# Training the model
 
 We assume a working installation of `codacore` ([link](https://github.com/egr95/R-codacore/blob/main/README.md)).
 ```{r}
