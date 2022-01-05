@@ -827,7 +827,8 @@ plotROC = function(cdcr) {
   }
   cols = c("black", "gray50", "gray70", "gray80", "gray90")
   lwds = c(2.0, 1.5, 1.2, 0.8, 0.6)
-  oldPar = graphics::par()$pty
+  oldPar <- graphics::par(no.readonly = TRUE)
+  on.exit(graphics::par(oldPar)) # make sure to restore params even if there's an error
   graphics::par(pty = 's')
   graphics::plot(cdcr$ensemble[[1]]$ROC)
   legendCols = cols
@@ -848,8 +849,6 @@ plotROC = function(cdcr) {
     col=rev(legendCols),
     lwd=rev(legendLwds) + 0.5
   )
-  graphics::par(pty = oldPar)
-  
 }
 
 
