@@ -51,7 +51,7 @@ utils::globalVariables(c("self"))
   # Add some metrics
   yHat = predict(cdbl, x) + boostingOffset
   if (cdbl$objective == 'binary classification') {
-    cdbl$ROC = pROC::roc(y, yHat, quiet=T)
+    cdbl$ROC = pROC::roc(y, yHat, quiet=TRUE)
     cdbl$AUC = pROC::auc(cdbl$ROC)
     cdbl$accuracy = mean(y == (yHat > 0))
   } else {
@@ -260,7 +260,7 @@ findBestCutoff.CoDaBaseLearner = function(cdbl) {
             Learning rates might need recalibrating - try adaptive rates?")
   }
   
-  candidateCutoffs = sort(abs(cdbl$softAssignment), decreasing=T)
+  candidateCutoffs = sort(abs(cdbl$softAssignment), decreasing=TRUE)
   maxCutoffs = cdbl$cvParams$maxCutoffs
   # Start from 2nd since we equalized +ve and -ve; thus neither side will be empty
   candidateCutoffs = candidateCutoffs[2:min(maxCutoffs, length(candidateCutoffs))]
@@ -273,12 +273,12 @@ findBestCutoff.CoDaBaseLearner = function(cdbl) {
   startTime = Sys.time()
   numFolds = cdbl$cvParams$numFolds
   # Naive way of splitting equally into folds:
-  foldIdx = sample(cut(1:length(cdbl$y), breaks=numFolds, labels=F))
+  foldIdx = sample(cut(1:length(cdbl$y), breaks=numFolds, labels=FALSE))
   if (cdbl$objective == "binary classification") {
     # Instead we randomize with equal # of case/controls in each fold
     # See discussion on stratified CV in page 204 of He & Ma 2013
-    caseIdx = sample(cut(1:sum(cdbl$y), breaks=numFolds, labels=F))
-    controlIdx = sample(cut(1:sum(1 - cdbl$y), breaks=numFolds, labels=F))
+    caseIdx = sample(cut(1:sum(cdbl$y), breaks=numFolds, labels=FALSE))
+    controlIdx = sample(cut(1:sum(1 - cdbl$y), breaks=numFolds, labels=FALSE))
     foldIdx[cdbl$y == 1] = caseIdx
     foldIdx[cdbl$y == 0] = controlIdx
   } 
@@ -291,7 +291,7 @@ findBestCutoff.CoDaBaseLearner = function(cdbl) {
       cdbl = setInterceptAndSlope.CoDaBaseLearner(cdbl, cdbl$x[foldIdx != j,], cdbl$y[foldIdx != j], cdbl$boostingOffset[foldIdx != j])
       yHat = predict(cdbl, cdbl$x[foldIdx == j,]) + cdbl$boostingOffset[foldIdx == j]
       if (cdbl$objective == "binary classification") {
-        ROC = pROC::roc(cdbl$y[foldIdx == j], yHat, quiet=T)
+        ROC = pROC::roc(cdbl$y[foldIdx == j], yHat, quiet=TRUE)
         scores[i, j] = pROC::auc(ROC)
       } else if (cdbl$objective == "regression") {
         scores[i, j] = -sqrt(mean((cdbl$y[foldIdx == j] - yHat)^2))
@@ -319,7 +319,7 @@ findBestCutoff.CoDaBaseLearner = function(cdbl) {
   }
   
   if (cdbl$objective == "binary classification") {
-    baseLineScore = pROC::auc(pROC::roc(cdbl$y, cdbl$boostingOffset, quiet=T))
+    baseLineScore = pROC::auc(pROC::roc(cdbl$y, cdbl$boostingOffset, quiet=TRUE))
   } else if (cdbl$objective == "regression") {
     baseLineScore = -sqrt(mean((cdbl$y - cdbl$boostingOffset)^2))
   }
@@ -376,12 +376,12 @@ computeLogRatio.CoDaBaseLearner = function(cdbl, x) {
   } else { # we have a bona fide log-ratio
     if (cdbl$logRatioType == 'A') {
       epsilon = cdbl$optParams$epsilonA
-      pvePart = rowSums(x[, cdbl$hard$numerator, drop=F]) # drop=F to keep as matrix
-      nvePart = rowSums(x[, cdbl$hard$denominator, drop=F])
+      pvePart = rowSums(x[, cdbl$hard$numerator, drop=FALSE]) # drop=FALSE to keep as matrix
+      nvePart = rowSums(x[, cdbl$hard$denominator, drop=FALSE])
       logRatio = log(pvePart + epsilon) - log(nvePart + epsilon)
     } else if (cdbl$logRatioType == 'B') {
-      pvePart = rowMeans(log(x[, cdbl$hard$numerator, drop=F])) # drop=F to keep as matrix
-      nvePart = rowMeans(log(x[, cdbl$hard$denominator, drop=F]))
+      pvePart = rowMeans(log(x[, cdbl$hard$numerator, drop=FALSE])) # drop=FALSE to keep as matrix
+      nvePart = rowMeans(log(x[, cdbl$hard$denominator, drop=FALSE]))
       logRatio = pvePart - nvePart
     }
   }
@@ -390,10 +390,10 @@ computeLogRatio.CoDaBaseLearner = function(cdbl, x) {
 }
 
 
-predict.CoDaBaseLearner = function(cdbl, x, logits=T) {
+predict.CoDaBaseLearner = function(cdbl, x, asLogits=TRUE) {
   logRatio = computeLogRatio.CoDaBaseLearner(cdbl, x)
   eta = cdbl$slope * logRatio + cdbl$intercept
-  if (logits) {
+  if (asLogits) {
     return(eta)
   } else {
     if (cdbl$objective == 'regression') {
@@ -473,9 +473,9 @@ codacore <- function(
   maxBaseLearners=5,
   optParams=list(),
   cvParams=list(),
-  verbose=F,
-  overlap=T,
-  fast=T
+  verbose=FALSE,
+  overlap=TRUE,
+  fast=TRUE
 ){
   
   # Convert x and y to the appropriate objects
@@ -687,7 +687,7 @@ codacore <- function(
 #'
 #' @param object A codacore object.
 #' @param newx A set of inputs to our model.
-#' @param logits Whether to return outputs in logit space
+#' @param asLogits Whether to return outputs in logit space
 #'  (as opposed to probability space). Should always be set
 #'  to TRUE for regression with continuous outputs, but can
 #'  be toggled for classification problems.
@@ -699,7 +699,7 @@ codacore <- function(
 #' @param ... Not used.
 #'
 #' @export
-predict.codacore = function(object, newx, logits=T, numLogRatios=NA, ...) {
+predict.codacore = function(object, newx, asLogits=TRUE, numLogRatios=NA, ...) {
   # Throw an error if zeros are present
   if (any(newx == 0)) {
     if (object$logRatioType == 'A') {
@@ -722,7 +722,7 @@ predict.codacore = function(object, newx, logits=T, numLogRatios=NA, ...) {
   }
   
   if (object$objective == 'binary classification') {
-    if (logits) {
+    if (asLogits) {
       return(yHat)
     } else {
       return(1 / (1 + exp(-yHat)))

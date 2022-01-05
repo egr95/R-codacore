@@ -4,14 +4,14 @@
 \alias{predict.codacore}
 \title{predict}
 \usage{
-\method{predict}{codacore}(object, newx, logits = T, numLogRatios = NA, ...)
+\method{predict}{codacore}(object, newx, asLogits = TRUE, numLogRatios = NA, ...)
 }
 \arguments{
 \item{object}{A codacore object.}
 
 \item{newx}{A set of inputs to our model.}
 
-\item{logits}{Whether to return outputs in logit space
+\item{asLogits}{Whether to return outputs in logit space
 (as opposed to probability space). Should always be set
 to TRUE for regression with continuous outputs, but can
 be toggled for classification problems.}

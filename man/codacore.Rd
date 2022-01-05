@@ -15,9 +15,9 @@ codacore(
   maxBaseLearners = 5,
   optParams = list(),
   cvParams = list(),
-  verbose = F,
-  overlap = T,
-  fast = T
+  verbose = FALSE,
+  overlap = TRUE,
+  fast = TRUE
 )
 }
 \arguments{
@@ -81,7 +81,7 @@ This function implements the codacore algorithm described by Gordon-Rodriguez et
 (https://doi.org/10.1101/2021.02.11.430695).
 }
 \examples{
-\dontrun{
+\donttest{
 data("Crohn")
 x <- Crohn[, -ncol(Crohn)]
 y <- Crohn[, ncol(Crohn)]
