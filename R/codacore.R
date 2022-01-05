@@ -449,7 +449,7 @@ predict.CoDaBaseLearner = function(cdbl, x, asLogits=TRUE) {
 #' @return A \code{codacore} object.
 #' 
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' data("Crohn")
 #' x <- Crohn[, -ncol(Crohn)]
 #' y <- Crohn[, ncol(Crohn)]
