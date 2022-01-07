@@ -38,6 +38,8 @@ plot(model)
 
 Gordon-Rodriguez, Elliott, Thomas P. Quinn, and John P. Cunningham. "Learning sparse log-ratios for high-throughput sequencing data." Bioinformatics 38.1 (2022): 157-163. [[link](https://doi.org/10.1093/bioinformatics/btab645)]
 
+Quinn, Thomas P., Elliott Gordon-Rodriguez, and Ionas Erb. "A critique of differential abundance analysis, and advocacy for an alternative." arXiv preprint arXiv:2104.07266 (2021). [[link](https://arxiv.org/abs/2104.07266)]
+
 ## Acknowledgements
 Thanks for your contributions to codacore!
 
