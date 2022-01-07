@@ -7,11 +7,12 @@ Authors@R: c(
     )
 Description: In the context of high-throughput genetic data,
     CoDaCoRe identifies a set of sparse biomarkers that are
-    predictive of a response variable of interest. More generally,
-    CoDaCoRe can be applied to any regression problem where the
-    independent variable is Compositional (CoDa), to derive a set
-    of scale-invariant log-ratios (ILR or SLR) that are maximally
-    associated to a dependent variable.
+    predictive of a response variable of interest (Gordon-Rodriguez 
+    et al., 2021) <doi:10.1093/bioinformatics/btab645>. More 
+    generally, CoDaCoRe can be applied to any regression problem 
+    where the independent variable is Compositional (CoDa), to 
+    derive a set of scale-invariant log-ratios (ILR or SLR) that 
+    are maximally associated to a dependent variable.
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true

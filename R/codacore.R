@@ -445,6 +445,9 @@ predict.CoDaBaseLearner = function(cdbl, x, asLogits=TRUE) {
 #'  will become orthogonal in the Aitchison sense, analogously to the
 #'  isometric-log-ratio transformation, while losing a small amount of
 #'  model flexibility.
+#' @param fast A boolean. Whether to run in fast or slow mode. TRUE by
+#'  default. Running in slow mode will take ~x5 the computation time,
+#'  but may help identify slightly more accurate log-ratios.
 #' 
 #' @return A \code{codacore} object.
 #' 

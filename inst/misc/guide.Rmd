@@ -27,6 +27,62 @@ knitr::opts_chunk$set(
 )
 ```
 
+# Installation
+
+You can install ```codacore``` by running:
+```r
+install.packages("codacore")
+```
+
+You may also install the development version directly from Github, using the [devtools package](https://www.r-project.org/nosvn/pandoc/devtools.html).
+```r
+devtools::install_github("egr95/R-codacore", ref="main")
+```
+
+Note that CoDaCoRe requires a working installation of [TensorFlow](https://tensorflow.rstudio.com/).
+If you do not have Tensorflow previously installed, when you run ```codacore()``` for the first time you will likely encounter an error message of the form:
+```r
+> codacore(x, y)
+
+ERROR: Could not find a version that satisfies the requirement tensorflow
+ERROR: No matching distribution found for tensorflow
+Error: Installation of TensorFlow not found.
+
+Python environments searched for 'tensorflow' package:
+ /moto/stats/users/eg2912/miniconda3/envs/r-test/bin/python3.9
+ /usr/bin/python2.7
+
+You can install TensorFlow using the install_tensorflow() function.
+```
+
+This can be fixed simply by [installing tensorflow](https://tensorflow.rstudio.com/installation/), as follows:
+```r
+install.packages("tensorflow")
+library("tensorflow")
+install_tensorflow()
+
+install.packages("keras")
+library("keras")
+install_keras()
+```
+
+Note also that you may have to restart your R session between installation of ```codacore```, ```tensorflow```, and ```keras```.
+
+
+# Summary of method
+
+CoDaCoRe is an algorithm to identify predictive log-ratio biomarkers in high-throughput sequencing data. Let $x$ denote HTS input (e.g., $x_{i,j}$ denotes the abundance of the $j$th bacteria in the $i$th subject), and let $y$ denote the outcome of interest (e.g., $y_i$ is equal to 0 or 1 depending on whether the $i$th subject belonged to the case or the control group). Given a set of $(x_i, y_i)$ pairs, CoDaCoRe identifies predictive biomarkers of the form:
+$$
+B(x_i; J^+, J^-) = \log \left( \frac{\sum_{j \in J^+} x_{i,j}}{\sum_{j \in J^-} x_{i,j}} \right),
+$$
+that are maximally associated with the response variable $y_i$. In other words, CoDaCoRe identifies a numerator set $J^+$ and a denominator set $J^-$, such that their log-ratio is most predictive of the response variable. By default, CoDaCoRe uses *balances*, which are defined as the log-ratio of *geometric means* (as opposed to summations):
+$$
+B(x_i; J^+, J^-) = \log \left( \frac{(\prod_{j \in J^+} x_{i,j})^{|J^+|}}{(\prod_{j \in J^-} x_{i,j})^{|J^-|}} \right).
+$$
+
+For an introduction to balances, we refer the reader to the [selbal paper](https://journals.asm.org/doi/abs/10.1128/msystems.00053-18), and for a more detailed treatment of CoDaCoRe and other log-ratio methodology, we refer the reader to the [codacore paper](https://doi.org/10.1093/bioinformatics/btab645) and [this paper](https://arxiv.org/abs/2104.07266).
+
+
 # Training the model
 
 We assume a working installation of `codacore` ([link](https://github.com/egr95/R-codacore/blob/main/README.md)).
@@ -35,7 +91,7 @@ library("codacore")
 help(codacore)
 ```
 
-In this tutorial, we will showcase `codacore` using three datasets that were also analyzed by the authors of `selbal` [(Rivera-Pinto et al., 2018)](https://msystems.asm.org/content/3/4/e00053-18.short). First, we consider the Crohn's disease data from [(Gevers et al., 2014)](http://dx.doi.org/10.1016/j.chom.2014.02.005).
+In this tutorial, we will showcase `codacore` using three datasets that were also analyzed by the authors of `selbal` [(Rivera-Pinto et al., 2018)](https://journals.asm.org/doi/abs/10.1128/msystems.00053-18). First, we consider the Crohn's disease data from [(Gevers et al., 2014)](http://dx.doi.org/10.1016/j.chom.2014.02.005).
 ```{r}
 data("Crohn")
 x <- Crohn[, -ncol(Crohn)]
