@@ -1,4 +1,4 @@
-# R-codacore
+# codacore
 
 A self-contained, up-to-date implementation of [CoDaCoRe](https://doi.org/10.1093/bioinformatics/btab645), in the R programming language, by the original authors.
 
@@ -34,8 +34,12 @@ print(model)
 plot(model)
 ```
 
+## Reference
+
+Gordon-Rodriguez, Elliott, Thomas P. Quinn, and John P. Cunningham. "Learning sparse log-ratios for high-throughput sequencing data." Bioinformatics 38.1 (2022): 157-163. [[link](https://doi.org/10.1093/bioinformatics/btab645)]
+
 ## Acknowledgements
-Thanks for your contributions to R-codacore!
+Thanks for your contributions to codacore!
 
 - Marcus Fedarko
 - Gregor Seyer
