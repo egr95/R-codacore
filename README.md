@@ -1,3 +1,7 @@
+[![CRAN_Status_Badge](http://www.r-pkg.org/badges/version/codacore)](https://cran.r-project.org/package=codacore)
+[![Downloads](http://cranlogs.r-pkg.org/badges/codacore)](http://cranlogs.r-pkg.org/badges/codacore)
+[![Total Downloads](http://cranlogs.r-pkg.org/badges/grand-total/codacore)](http://cranlogs.r-pkg.org/badges/grand-total/codacore)
+
 # codacore
 
 A self-contained, up-to-date implementation of [CoDaCoRe](https://doi.org/10.1093/bioinformatics/btab645), in the R programming language, by the original authors.
