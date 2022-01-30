@@ -34,7 +34,7 @@ You can install ```codacore``` by running:
 install.packages("codacore")
 ```
 
-You may also install the development version directly from Github, using the [devtools package](https://www.r-project.org/nosvn/pandoc/devtools.html).
+You may also install the [development version](https://github.com/egr95/R-codacore) directly from Github, using the [devtools package](https://www.r-project.org/nosvn/pandoc/devtools.html).
 ```r
 devtools::install_github("egr95/R-codacore", ref="main")
 ```
