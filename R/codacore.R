@@ -201,8 +201,8 @@ trainRelaxation.CoDaBaseLearner = function(cdbl) {
     # compile graph
     model %>% keras::compile(
       loss = loss_func,
-      optimizer = keras::optimizer_sgd(lr=lr, momentum=cdbl$optParams$momentum),
-      # optimizer = keras::optimizer_adam(lr=0.001),
+      optimizer = keras::optimizer_sgd(lr, momentum=cdbl$optParams$momentum),
+      # optimizer = keras::optimizer_adam(0.001),
       metrics = metrics
     )
     
