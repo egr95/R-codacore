@@ -4,6 +4,8 @@
 
 # codacore
 
+*Update: [CoDaCoRe is now live on CRAN](https://cran.r-project.org/web/packages/codacore/index.html)*
+
 A self-contained, up-to-date implementation of [CoDaCoRe](https://doi.org/10.1093/bioinformatics/btab645), in the R programming language, by the original authors.
 
 The [CoDaCoRe guide](https://egr95.github.io/R-codacore/inst/misc/guide.html) contains a detailed tutorial on installation, usage and functionality.
@@ -12,8 +14,6 @@ Note this repository is under active development. If you would like to use CoDaC
 Contributions, fixes, and feature requests are also welcome - please create an issue, submit a pull request, or email me.
 
 ## Quick-start: how to install and run CoDaCoRe
-
-*Update: [CoDaCoRe is now live on CRAN](https://cran.r-project.org/web/packages/codacore/index.html)!*
 
 1. We can install CoDaCoRe by running (further details in the [guide](https://egr95.github.io/R-codacore/inst/misc/guide.html#installation)):
 
