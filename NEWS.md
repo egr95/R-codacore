@@ -1,3 +1,9 @@
+## codacore 0.0.4
+---------------------
+* Fix vignette title.
+* Updated README to reflect CRAN latest.
+* Add cvParams default values to func documentation.
+
 ## codacore 0.0.3
 ---------------------
 * Live on CRAN.
