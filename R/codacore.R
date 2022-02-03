@@ -197,7 +197,7 @@ trainRelaxation.CoDaBaseLearner = function(cdbl) {
     if (cdbl$objective == "binary classification") {
       model %>% layer_activation('sigmoid')
     }
-
+    
     # compile graph
     model %>% keras::compile(
       loss = loss_func,
@@ -435,9 +435,10 @@ predict.CoDaBaseLearner = function(cdbl, x, asLogits=TRUE) {
 #'  and vanillaLR (the learning rate to be used if the user does *not* want
 #'  to use the 'adaptiveLR', to be used at the risk of optimization issues).
 #' @param cvParams A list of named parameters for the "hardening" procedure
-#'  using cross-validation. Includes numFolds (number of folds) and
+#'  using cross-validation. Includes numFolds (number of folds, default=5) and
 #'  maxCutoffs (number of candidate cutoff values of 'c' to be tested out
-#'  during CV process).
+#'  during CV process, default=20 meaning log-ratios with up to 21 components
+#'  can be found by codacore).
 #' @param verbose A boolean. Toggles whether to display intermediate steps.
 #' @param overlap A boolean. Toggles whether successive log-ratios found by 
 #'  CoDaCoRe may contain repeated input variables. TRUE by default.
@@ -484,7 +485,7 @@ codacore <- function(
   # Convert x and y to the appropriate objects
   x = .prepx(x)
   y = .prepy(y)
-
+  
   # Check whether we are in regression or classification mode by inspecting y
   if (is.null(objective)) {
     distinct_values = length(unique(y))
@@ -714,7 +715,7 @@ predict.codacore = function(object, newx, asLogits=TRUE, numLogRatios=NA, ...) {
   
   x = .prepx(newx)
   yHat = rep(0, nrow(x))
-
+  
   if (is.na(numLogRatios)) {
     numLogRatios = length(object$ensemble)
   }
@@ -784,20 +785,20 @@ print.codacore = function(x, ...) {
 #'
 #' @export
 plot.codacore = function(x, index = 1, ...) {
-
+  
   allRatios = getLogRatios(x)
   if(index > ncol(allRatios)){
     stop("The selected log-ratio does not exist!")
   }
-
+  
   if (x$objective == 'regression') {
-
+    
     logRatio = allRatios[, index]
     graphics::plot(logRatio, x$y, xlab='Log-ratio score', ylab='Response')
     graphics::abline(x$ensemble[[1]]$intercept, x$ensemble[[1]]$slope, lwd=2)
     
   } else if (x$objective == 'binary classification') {
-
+    
     logRatio = allRatios[, index]
     
     # Convert 0/1 binary output to the original labels, if any
@@ -813,7 +814,7 @@ plot.codacore = function(x, index = 1, ...) {
       ylab='Outcome',
       horizontal=TRUE
     )
-
+    
   }
 }
 
