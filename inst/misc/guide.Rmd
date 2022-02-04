@@ -273,7 +273,7 @@ dfTest <- HIV[-trainIndex,]
 xTest <- x[-trainIndex,]
 yTest <- z[-trainIndex]
 yHatLogit <- predict(partial, newdata = dfTest) + predict(model, xTest, logits=T)
-yHat <- yHatLogit > 0
+yHat <- yHatLogit > 0 # in case we need binary predictions e.g. to compute accuracy
 testAUC <- pROC::auc(pROC::roc(yTest, yHatLogit, quiet=T))
 cat("Test AUC:", round(100 * testAUC), "%")
 ```
