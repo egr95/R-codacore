@@ -884,13 +884,22 @@ activeInputs.codacore = function(cdcr) {
 #' @param cdcr A codacore object.
 #' @param baseLearnerIndex An integer indicating which of the 
 #'     (possibly multiple) log-ratios learned by codacore to be used.
+#' @param boolean Whether to return the parts in boolean form
+#'     (a vector of TRUE/FALSE) or to return the column names of
+#'     those parts directly.
 #'
 #' @return The covariates in the numerator of the selected log-ratio.
 #' 
 #' @export
-getNumeratorParts <- function(cdcr, baseLearnerIndex = 1){
+getNumeratorParts <- function(cdcr, baseLearnerIndex=1, boolean=TRUE){
   
-  cdcr$ensemble[[baseLearnerIndex]]$hard$numerator
+  parts = cdcr$ensemble[[baseLearnerIndex]]$hard$numerator
+  
+  if (boolean) {
+    return(parts)
+  } else {
+    return(colnames(cdcr$x)[parts])
+  }
 }
 
 #' getDenominatorParts
@@ -898,13 +907,22 @@ getNumeratorParts <- function(cdcr, baseLearnerIndex = 1){
 #' @param cdcr A codacore object.
 #' @param baseLearnerIndex An integer indicating which of the 
 #'     (possibly multiple) log-ratios learned by codacore to be used.
-#'
+#' @param boolean Whether to return the parts in boolean form
+#'     (a vector of TRUE/FALSE) or to return the column names of
+#'     those parts directly.
+#' 
 #' @return The covariates in the denominator of the selected log-ratio.
 #' 
 #' @export
-getDenominatorParts <- function(cdcr, baseLearnerIndex = 1){
+getDenominatorParts <- function(cdcr, baseLearnerIndex=1, boolean=TRUE){
   
-  cdcr$ensemble[[baseLearnerIndex]]$hard$denominator
+  parts = cdcr$ensemble[[baseLearnerIndex]]$hard$denominator
+  
+  if (boolean) {
+    return(parts)
+  } else {
+    return(colnames(cdcr$x)[parts])
+  }
 }
 
 #' getLogRatios
@@ -960,6 +978,48 @@ getSlopes <- function(cdcr){
   }
   
   return(out)
+}
+
+
+#' getNumLogRatios
+#'
+#' @param cdcr A codacore object
+#'
+#' @return The number of log-ratios that codacore found.
+#'     Typically a small integer. Can be zero if codacore
+#'     found no predictive log-ratios in the data.
+#' 
+#' @export
+getNumLogRatios <- function(cdcr){
+  return(length(cdcr$ensemble))
+}
+
+
+#' getTidyTable
+#'
+#' @param cdcr A codacore object
+#'
+#' @return A table displaying the log-ratios found.
+#' 
+#' @export
+getTidyTable <- function(cdcr){
+  
+  tidyLogRatio = function(baseLearnerIndex, model, xTrain){
+    x = getNumeratorParts(model, baseLearnerIndex, FALSE)
+    df = data.frame(Side = 'Numerator', Name = x)
+    x = getDenominatorParts(model, baseLearnerIndex, FALSE)
+    df = rbind(df, data.frame(Side = 'Denominator', Name = x))
+    df$logRatioIndex = baseLearnerIndex
+    return(df)
+  }
+  
+  num = getNumLogRatios(cdcr)
+  
+  if (num == 0) {
+    return()
+  } else {
+    do.call(rbind, lapply(1:num, tidyLogRatio, model=cdcr))
+  }
 }
 
 
