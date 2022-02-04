@@ -49,3 +49,4 @@ Thanks for your contributions to codacore!
 
 - Marcus Fedarko
 - Gregor Seyer
+- Nick Youngblut

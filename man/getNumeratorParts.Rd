@@ -4,13 +4,17 @@
 \alias{getNumeratorParts}
 \title{getNumeratorParts}
 \usage{
-getNumeratorParts(cdcr, baseLearnerIndex = 1)
+getNumeratorParts(cdcr, baseLearnerIndex = 1, boolean = TRUE)
 }
 \arguments{
 \item{cdcr}{A codacore object.}
 
 \item{baseLearnerIndex}{An integer indicating which of the 
 (possibly multiple) log-ratios learned by codacore to be used.}
+
+\item{boolean}{Whether to return the parts in boolean form
+(a vector of TRUE/FALSE) or to return the column names of
+those parts directly.}
 }
 \value{
 The covariates in the numerator of the selected log-ratio.

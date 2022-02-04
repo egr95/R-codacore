@@ -177,6 +177,8 @@ Other useful functions include:
 getNumeratorParts(model, 1)
 getDenominatorParts(model, 1)
 getLogRatios(model, xTest)
+getNumLogRatios(model)
+getTidyTable(model)
 getSlopes(model)
 ```
 

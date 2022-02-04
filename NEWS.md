@@ -1,8 +1,9 @@
 ## codacore 0.0.4
 ---------------------
-* Fix vignette title.
+* Update vignette (title and minor clarifications).
 * Updated README to reflect CRAN latest.
 * Add cvParams default values to func documentation.
+* Add helper funcs `getNumLogRatios()` and `getTidyTable()`
 
 ## codacore 0.0.3
 ---------------------

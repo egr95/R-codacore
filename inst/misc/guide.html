@@ -277,7 +277,7 @@ B(x_i; J^+, J^-) = \log \left( \frac{(\prod_{j \in J^+} x_{i,j})^{|J^+|}}{(\prod
 <span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a>yHat[failure] <span class="ot">&lt;-</span> <span class="fu">levels</span>(y)[<span class="dv">1</span>]</span>
 <span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a>yHat[success] <span class="ot">&lt;-</span> <span class="fu">levels</span>(y)[<span class="dv">2</span>]</span>
 <span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">&quot;Classification accuracy on test set =&quot;</span>, <span class="fu">round</span>(<span class="fu">mean</span>(yHat <span class="sc">==</span> yTest), <span class="dv">2</span>))</span>
-<span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Classification accuracy on test set = 0.77</span></span></code></pre></div>
+<span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Classification accuracy on test set = 0.73</span></span></code></pre></div>
 <p>Note our <code>predict</code> function can be restricted to only use the top <em>k</em> log-ratios in the model for prediction. For example, the following will compute the AUC of a 1-log-ratio model, using only the top log-ratio.</p>
 <div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>yHat <span class="ot">&lt;-</span> <span class="fu">predict</span>(model, xTest, <span class="at">logits=</span>F, <span class="at">numLogRatios=</span><span class="dv">1</span>)</span>
 <span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">&quot;Test set AUC =&quot;</span>, pROC<span class="sc">::</span><span class="fu">auc</span>(pROC<span class="sc">::</span><span class="fu">roc</span>(yTest, yHat, <span class="at">quiet=</span>T)))</span>
@@ -286,7 +286,9 @@ B(x_i; J^+, J^-) = \log \left( \frac{(\prod_{j \in J^+} x_{i,j})^{|J^+|}}{(\prod
 <div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="fu">getNumeratorParts</span>(model, <span class="dv">1</span>)</span>
 <span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="fu">getDenominatorParts</span>(model, <span class="dv">1</span>)</span>
 <span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a><span class="fu">getLogRatios</span>(model, xTest)</span>
-<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a><span class="fu">getSlopes</span>(model)</span></code></pre></div>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a><span class="fu">getNumLogRatios</span>(model)</span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a><span class="fu">getTidyTable</span>(model)</span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a><span class="fu">getSlopes</span>(model)</span></code></pre></div>
 </div>
 <div id="controlling-overlap-between-log-ratios" class="section level1" number="6">
 <h1 number="6"><span class="header-section-number">6</span> Controlling overlap between log-ratios</h1>
