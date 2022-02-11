@@ -34,7 +34,7 @@ You can install ```codacore``` by running:
 install.packages("codacore")
 ```
 
-You may also install the [development version](https://github.com/egr95/R-codacore) directly from Github, using the [devtools package](https://www.r-project.org/nosvn/pandoc/devtools.html).
+You may instead install the [development version](https://github.com/egr95/R-codacore) directly from Github, using the [devtools package](https://www.r-project.org/nosvn/pandoc/devtools.html).
 ```r
 devtools::install_github("egr95/R-codacore", ref="main")
 ```
@@ -280,6 +280,16 @@ testAUC <- pROC::auc(pROC::roc(yTest, yHatLogit, quiet=T))
 cat("Test AUC:", round(100 * testAUC), "%")
 ```
 
+When the outcome variable is continuous, this is simpler as there is no logit transformation and the contributions of the partial model can be added directly, e.g.,
+```r
+# Suppose that, instead of predicting HIV status (a binary target),
+# we now have some continuous target, 'yCts'
+partial2 <- lm(yCts ~ MSM, data=dfTrain)
+model2 <- codacore(xTrain, yCtsTrain, offset=predict(partial))
+print(model2)
+yCtsHat <- predict(partial2, newdata = dfTest) + predict(model2, xTest)
+MSE <- mean((yCtsTest - yCtsHat)^2)
+```
 
 ## Joint fit
 

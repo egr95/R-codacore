@@ -1,6 +1,9 @@
 ## codacore 0.0.4
 ---------------------
-* Update vignette (title and minor clarifications).
+* Update vignette.
+    * Fix title.
+    * Add incremental fit for cts. target.
+    * Minor clarifications.
 * Updated README to reflect CRAN latest.
 * Add cvParams default values to func documentation.
 * Add helper funcs `getNumLogRatios()` and `getTidyTable()`
