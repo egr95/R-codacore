@@ -16,7 +16,7 @@ Description: In the context of high-throughput genetic data,
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
-RoxygenNote: 7.1.1
+RoxygenNote: 7.1.2
 Depends:
     R (>= 3.6.0)
 Imports:
