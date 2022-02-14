@@ -1,6 +1,6 @@
 Package: codacore
 Title: Learning Sparse Log-Ratios for Compositional Data
-Version: 0.0.2
+Version: 0.0.3
 Authors@R: 
     person(given = "Elliott",
            family = "Gordon-Rodriguez",

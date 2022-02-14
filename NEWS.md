@@ -1,4 +1,8 @@
-## codacore 0.0.1
+## codacore 0.0.3
+---------------------
+* Add `getBinaryPartitions` function to retrieve SBP-like representation of learned balances
+
+## codacore 0.0.2
 ---------------------
 * Updated tests.
 * Updated guide.

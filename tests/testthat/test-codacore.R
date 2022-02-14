@@ -16,6 +16,11 @@ testthat::test_that("simple logratios", {
   testthat::expect_true(getDenominatorParts(model, 1)[2])
   testthat::expect_equal(model$ensemble[[1]]$accuracy, 0.846)
   
+  # test getBinaryPartitions() function
+  testthat::expect_true(getBinaryPartitions(model)[1,1] == 1)
+  testthat::expect_true(getBinaryPartitions(model)[2,1] == -1)
+  testthat::expect_true(getBinaryPartitions(model)[3,1] == 0)
+  
   # Now test in regression mode
   HTS = simulateHTS(n, p, outputType = 'continuous')
   x = HTS$x + 1
