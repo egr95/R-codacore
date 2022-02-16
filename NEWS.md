@@ -7,6 +7,7 @@
 * Updated README to reflect CRAN latest.
 * Add cvParams default values to func documentation.
 * Add helper funcs `getNumLogRatios()` and `getTidyTable()`
+* Add `getBinaryPartitions` function to retrieve SBP-like representation of learned balances
 
 ## codacore 0.0.3
 ---------------------

@@ -1022,6 +1022,27 @@ getTidyTable <- function(cdcr){
   }
 }
 
+#' getBinaryPartitions
+#'
+#' @param cdcr A codacore object
+#'
+#' @return A matrix describing whether each component (as rows) is found in the
+#'  numerator (1) or denominator (-1) of each learned log-ratio (as columns).
+#'  This format resembles a serial binary partition matrix frequently used
+#'  in balance analysis.
+#' 
+#' @export
+getBinaryPartitions <- function(cdcr){
+  
+  numBaseLearners <- length(cdcr$ensemble)
+  res <- list(numBaseLearners)
+  for(baseLearner in 1:numBaseLearners){
+    thisNumerator <- getNumeratorParts(cdcr, baseLearner)
+    thisDenominater <- getDenominatorParts(cdcr, baseLearner)
+    res[[baseLearner]] <- thisNumerator*1 + thisDenominater*-1
+  }
+  do.call("cbind", res)
+}
 
 .prepx = function(x) {
   if (class(x)[1] == 'data.frame') {x = as.matrix(x)}
