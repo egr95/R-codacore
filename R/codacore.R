@@ -1045,6 +1045,7 @@ getBinaryPartitions <- function(cdcr){
 }
 
 .prepx = function(x) {
+  if (class(x)[1] == 'tbl_df') {x = as.data.frame(x)}
   if (class(x)[1] == 'data.frame') {x = as.matrix(x)}
   if (is.integer(x)) {x = x * 1.0}
   
@@ -1055,6 +1056,9 @@ getBinaryPartitions <- function(cdcr){
 }
 
 .prepy = function(y) {
+  if (class(y)[1] == 'tbl_df') {
+    y = as.data.frame(y)
+  }
   if (class(y)[1] == 'data.frame') {
     if (ncol(y) > 1) {
       stop("Response should be 1-dimensional.")
