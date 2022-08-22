@@ -4,7 +4,7 @@
 
 # codacore
 
-*Update: [CoDaCoRe is now live on CRAN](https://cran.r-project.org/web/packages/codacore/index.html)*
+*Update: [CoDaCoRe is now live on CRAN](https://CRAN.R-project.org/package=codacore/)*
 
 A self-contained, up-to-date implementation of [CoDaCoRe](https://doi.org/10.1093/bioinformatics/btab645), in the R programming language, by the original authors.
 

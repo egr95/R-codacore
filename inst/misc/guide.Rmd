@@ -4,11 +4,15 @@ author:
   - Elliott Gordon Rodriguez^[eg2912@columbia.edu]
 date: "`r Sys.Date()`"
 output: 
-  md_document:
+  rmarkdown::html_vignette:
     number_sections: yes
     toc: true
     toc_depth: 3
-  rmarkdown::html_vignette:
+  pdf_document:
+    number_sections: no
+    toc: false
+    keep_tex: true
+  md_document:
     number_sections: yes
     toc: true
     toc_depth: 3
@@ -55,7 +59,7 @@ Python environments searched for 'tensorflow' package:
 You can install TensorFlow using the install_tensorflow() function.
 ```
 
-This can be fixed simply by [installing tensorflow](https://tensorflow.rstudio.com/installation/), as follows:
+This can be fixed simply by [installing tensorflow](https://tensorflow.rstudio.com/install/), as follows:
 ```r
 install.packages("tensorflow")
 library("tensorflow")
