@@ -410,7 +410,10 @@ predict.CoDaBaseLearner = function(cdbl, x, asLogits=TRUE) {
 #' (https://doi.org/10.1101/2021.02.11.430695).
 #' 
 #' @param x A data.frame or matrix of the compositional predictor variables.
-#' @param y A data.frame, matrix or vector of the response.
+#'  Rows represent observations and columns represent variables.
+#' @param y A data.frame, matrix or vector of the response. In the case of a 
+#'  data.frame or matrix, there should be one row for each observation, and
+#'  just a single column.
 #' @param logRatioType A string indicating whether to use "balances" or "amalgamations".
 #'  Also accepts "balance", "B", "ILR", or "amalgam", "A", "SLR".
 #'  Note that the current implementation for balances is not strictly an ILR,
@@ -453,7 +456,7 @@ predict.CoDaBaseLearner = function(cdbl, x, asLogits=TRUE) {
 #' @return A \code{codacore} object.
 #' 
 #' @examples
-#' \donttest{
+#' \dontrun{
 #' data("Crohn")
 #' x <- Crohn[, -ncol(Crohn)]
 #' y <- Crohn[, ncol(Crohn)]
@@ -491,9 +494,9 @@ codacore <- function(
     distinct_values = length(unique(y))
     if (distinct_values == 2) {
       objective = 'binary classification'
-    } else if (class(y) == 'factor') {
+    } else if (inherits(y, 'factor')) {
       stop("Multi-class classification note yet implemented.")
-    } else if (class(y) == 'numeric') {
+    } else if (inherits(y, 'numeric')) {
       objective = 'regression'
       if (distinct_values <= 10) {
         warning("Response only has ", distinct_values, " distinct values.")
@@ -508,7 +511,7 @@ codacore <- function(
   }
   
   # Save names of labels if relevant
-  if (objective == 'binary classification' & class(y) == 'factor') {
+  if (objective == 'binary classification' & inherits(y, 'factor')) {
     yLevels = levels(y)
     y = as.numeric(y) - 1
   } else {
@@ -1056,27 +1059,31 @@ getBinaryPartitions <- function(cdcr){
 }
 
 .prepy = function(y) {
-  if (class(y)[1] == 'tbl_df') {
+  if (inherits(y, 'tbl_df')) {
     y = as.data.frame(y)
   }
-  if (class(y)[1] == 'data.frame') {
+  if (inherits(y, 'data.frame')) {
     if (ncol(y) > 1) {
-      stop("Response should be 1-dimensional.")
+      stop("Response should be 1-dimensional (if given 
+           as a data.frame or matrix, it should have a 
+           row for each sample, and a single column).")
     }
     y = y[[1]]
   }
-  if (class(y)[1] == 'matrix') {
+  if (inherits(y, 'matrix')) {
     if (ncol(y) > 1) {
-      stop("Response should be 1-dimensional.")
+      stop("Response should be 1-dimensional (if given 
+           as a data.frame or matrix, it should have a 
+           row for each sample, and a single column).")
     }
-    if (class(y[1]) == "character") {
+    if (inherits(y, 'character')) {
       y = as.character(y)
     }
-    if (class(y[1]) == "numeric"){
+    if (inherits(y, 'numeric')){
       y = as.numeric(y)
     }
   }
-  if (class(y) == 'character') {
+  if (inherits(y, 'character')) {
     y = factor(y)
   }
   return(y)

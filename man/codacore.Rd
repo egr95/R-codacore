@@ -82,7 +82,7 @@ This function implements the codacore algorithm described by Gordon-Rodriguez et
 (https://doi.org/10.1101/2021.02.11.430695).
 }
 \examples{
-\donttest{
+\dontrun{
 data("Crohn")
 x <- Crohn[, -ncol(Crohn)]
 y <- Crohn[, ncol(Crohn)]

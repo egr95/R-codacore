@@ -27,7 +27,8 @@ knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
   fig.width = 7,
-  fig.height = 5
+  fig.height = 5,
+  tidy.opts=list(width.cutoff=40), tidy=TRUE
 )
 ```
 
@@ -84,7 +85,7 @@ $$
 B(x_i; J^+, J^-) = \log \left( \frac{(\prod_{j \in J^+} x_{i,j})^{|J^+|}}{(\prod_{j \in J^-} x_{i,j})^{|J^-|}} \right).
 $$
 
-For an introduction to balances, we refer the reader to the [selbal paper](https://journals.asm.org/doi/abs/10.1128/msystems.00053-18), and for a more detailed treatment of CoDaCoRe and other log-ratio methodology, we refer the reader to the [codacore paper](https://doi.org/10.1093/bioinformatics/btab645) and [this paper](https://arxiv.org/abs/2104.07266).
+For an introduction to balances, we refer the reader to the [selbal paper](https://doi.org/10.1101/219386), and for a more detailed treatment of CoDaCoRe and other log-ratio methodology, we refer the reader to the [codacore paper](https://doi.org/10.1093/bioinformatics/btab645) and [this paper](https://arxiv.org/abs/2104.07266).
 
 
 # Training the model
@@ -95,14 +96,14 @@ library("codacore")
 help(codacore)
 ```
 
-In this tutorial, we will showcase `codacore` using three datasets that were also analyzed by the authors of `selbal` [(Rivera-Pinto et al., 2018)](https://journals.asm.org/doi/abs/10.1128/msystems.00053-18). First, we consider the Crohn's disease data from [(Gevers et al., 2014)](http://dx.doi.org/10.1016/j.chom.2014.02.005).
+In this tutorial, we will showcase `codacore` using three datasets that were also analyzed by the authors of `selbal` [(Rivera-Pinto et al., 2018)](https://doi.org/10.1101/219386). First, we consider the Crohn's disease data from [(Gevers et al., 2014)](http://dx.doi.org/10.1016/j.chom.2014.02.005).
 ```{r}
 data("Crohn")
 x <- Crohn[, -ncol(Crohn)]
 y <- Crohn[, ncol(Crohn)]
 ```
 
-Our goal is to identify ratio-based biomarkers that are predictive of disease status. Our input variable consists of the abundance of 48 microbial species in 975 samples.
+Our goal is to identify ratio-based biomarkers that are predictive of disease status. Our input variable consists of the abundance of 48 microbial species in 975 samples. *As is common in most machine learning libraries, our package expects an input of shape (n, p), with a row for each sample and a column for each variable.*
 ```{r}
 dim(x)
 ```
@@ -227,6 +228,10 @@ model <- codacore(xTrain, yTrain)
 print(model)
 plot(model)
 ```
+
+# Multiclass classification
+
+Our implementation does not currently support multiclass targets, however a multiclass classifier can be constructed from CoDaCoRe by taking the One-vs-One or One-vs-Rest strategies.
 
 # Tuning the regularization parameter lambda
 

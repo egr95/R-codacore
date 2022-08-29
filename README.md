@@ -1,6 +1,6 @@
-[![CRAN_Status_Badge](http://www.r-pkg.org/badges/version/codacore)](https://cran.r-project.org/package=codacore)
-[![Downloads](http://cranlogs.r-pkg.org/badges/codacore)](http://cranlogs.r-pkg.org/badges/codacore)
-[![Total Downloads](http://cranlogs.r-pkg.org/badges/grand-total/codacore)](http://cranlogs.r-pkg.org/badges/grand-total/codacore)
+[![CRAN_Status_Badge](https://cranlogs.r-pkg.org:443/badges/codacore)](https://cranlogs.r-pkg.org:443/badges/codacore)
+[![Downloads](https://cranlogs.r-pkg.org:443/badges/codacore)](https://cranlogs.r-pkg.org:443/badges/codacore)
+[![Total Downloads](https://cranlogs.r-pkg.org:443/badges/grand-total/codacore)](https://cranlogs.r-pkg.org:443/badges/grand-total/codacore)
 
 # codacore
 
