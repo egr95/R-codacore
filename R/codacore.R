@@ -277,6 +277,9 @@ findBestCutoff.CoDaBaseLearner = function(cdbl) {
   if (cdbl$objective == "binary classification") {
     # Instead we randomize with equal # of case/controls in each fold
     # See discussion on stratified CV in page 204 of He & Ma 2013
+    if (sum(cdbl$y) < numFolds | sum(1 - cdbl$y) < numFolds) {
+      stop("Insufficient samples from each class available for cross-validation.")
+    }
     caseIdx = sample(cut(1:sum(cdbl$y), breaks=numFolds, labels=FALSE))
     controlIdx = sample(cut(1:sum(1 - cdbl$y), breaks=numFolds, labels=FALSE))
     foldIdx[cdbl$y == 1] = caseIdx
@@ -554,6 +557,10 @@ codacore <- function(
   
   if (nrow(x) > 10000) {
     warning("Large number of observations; codacore could benefit from minibatching.")
+  }
+    
+  if (nrow(x) < 50) {
+    warning("Small number of observations; proceed with care (the likelihood of unstable results may increase).")
   }
   
   # Set up optimization parameters
